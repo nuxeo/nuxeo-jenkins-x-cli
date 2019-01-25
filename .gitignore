@@ -1,7 +1,7 @@
 node_modules
 coverage
 tmp*
-lib
+/lib
 npm-shrinkwrap.json
 package-lock.json
 npm-debug.log

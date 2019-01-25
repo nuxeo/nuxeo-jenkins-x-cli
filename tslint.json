@@ -5,6 +5,8 @@
       "trailing-comma": true,
       "no-relative-imports": false,
       "no-implicit-dependencies": false,
-      "newline-per-chained-call": false
+      "newline-per-chained-call": false,
+      "member-ordering": true,
+      "variable-name": false
   }
 }
