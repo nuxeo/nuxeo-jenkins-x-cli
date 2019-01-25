@@ -1,0 +1,43 @@
+{
+  "name": "nuxeo-jenkins-x-cli",
+  "version": "1.0.0",
+  "description": "Nuxeo Jenkins X CLI",
+  "main": "lib/index.js",
+  "bin": {
+    "njx": "lib/index.js"
+  },
+  "scripts": {
+    "test": "nyc mocha",
+    "start": "ts-node src/index.ts",
+    "build": "tsc -p .",
+    "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "tsc": "tsc"
+  },
+  "keywords": [
+    "nuxeo",
+    "jenkins-x",
+    "cli"
+  ],
+  "author": "Nuxeo",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.18",
+    "@types/yargs": "^12.0.8",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.9",
+    "nyc": "^13.1.0",
+    "source-map-support": "^0.5.10",
+    "ts-node": "^8.0.1",
+    "tslint": "^5.12.1",
+    "tslint-microsoft-contrib": "^6.0.0",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "@types/debug": "0.0.31",
+    "debug": "^4.1.1",
+    "yargs": "^12.0.5"
+  }
+}

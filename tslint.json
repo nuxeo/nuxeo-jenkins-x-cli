@@ -1,0 +1,10 @@
+{
+  "extends": ["tslint-microsoft-contrib"],
+  "rulesDirectory": ["node_modules/tslint-microsoft-contrib"],
+  "rules": {
+      "trailing-comma": true,
+      "no-relative-imports": false,
+      "no-implicit-dependencies": false,
+      "newline-per-chained-call": false
+  }
+}
