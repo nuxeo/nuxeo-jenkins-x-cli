@@ -29,4 +29,20 @@ describe('ProcessSpawner', () => {
     const res: string = await ps.arg('-ld').arg('/tmp').exec();
     expect(res).contains('/tmp');
   });
+
+  it('execute wrong cmd', async () => {
+    const ps: ProcessSpawner = new ProcessSpawner('/fooo/bar');
+    const res: string = await ps.exec().catch((err: Error) => {
+      return '';
+    });
+    expect(res).eq('', 'Must be emptied by catch');
+  });
+
+  it('execute `ls /foo/bar` that doesn\'t exist', async () => {
+    const ps: ProcessSpawner = new ProcessSpawner('/bin/ls').arg('/foo/bar');
+    const res: string = await ps.exec().catch((err: Number | Error) => {
+      return '';
+    });
+    expect(res).eq('', 'Must be emptied by catch');
+  });
 });

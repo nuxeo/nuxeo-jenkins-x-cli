@@ -49,7 +49,7 @@ export class ProcessSpawner {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    return new Promise<string>((resolve: (res: string) => void, reject: () => void): void => {
+    return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
       const lines: string[] = [];
 
       proc.stdout.on('data', (data: Buffer) => {
@@ -63,11 +63,17 @@ export class ProcessSpawner {
       });
 
       proc.on('close', (code: number) => {
+        this._log(`on close: ${code}`);
         if (code !== 0) {
-          reject();
+          reject(code);
         } else {
           resolve(lines.join(''));
         }
+      });
+
+      proc.on('error', (err: Error) => {
+        this._log(`on error: %O`, err);
+        reject(err);
       });
     });
   }
