@@ -1,5 +1,6 @@
 import { ChildProcess, spawn } from 'child_process';
 import debug from 'debug';
+import ora, { Ora, Options } from 'ora';
 import { basename } from 'path';
 
 /**
@@ -33,6 +34,10 @@ export class ProcessSpawner {
     return `${this._process}`;
   }
 
+  get cmd(): string {
+    return `${this.process} ${this.args}`;
+  }
+
   get cwd(): string {
     return `${this._cwd}`;
   }
@@ -43,6 +48,24 @@ export class ProcessSpawner {
     return this;
   }
 
+  public async execWithSpinner(opts?: Options, succeed?: string, fail?: string): Promise<string> {
+    return new Promise((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
+      const spinner: Ora = ora({
+        text: `Executing: ${this.cmd}`,
+        ...opts
+      });
+
+      spinner.start();
+      this.exec().then((value: string): void => {
+        spinner.succeed(succeed);
+        resolve(value);
+      }).catch((err: Number | Error): void => {
+        spinner.fail(fail);
+        reject(err);
+      });
+    });
+  }
+
   public async exec(): Promise<string> {
     const proc: ChildProcess = spawn(this._process, this._args, {
       cwd: this._cwd,
@@ -50,12 +73,10 @@ export class ProcessSpawner {
     });
 
     return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
-      const lines: string[] = [];
+      const chunks: Uint8Array[] = [];
 
       proc.stdout.on('data', (data: Buffer) => {
-        const str: string = String(data).trim();
-        lines.push(str);
-        this._log(str);
+        chunks.push(data);
       });
 
       proc.stderr.on('data', (data: Buffer) => {
@@ -67,7 +88,7 @@ export class ProcessSpawner {
         if (code !== 0) {
           reject(code);
         } else {
-          resolve(lines.join(''));
+          resolve(Buffer.concat(chunks).toString().trim());
         }
       });
 

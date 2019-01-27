@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 import { before, describe, it } from 'mocha';
 import { ProcessSpawner } from '../src/lib/ProcessSpawner';
+import { Writable } from 'stream';
+import { Encoding } from 'tslint/lib/utils';
 
 describe('ProcessSpawner', () => {
   it('change opts, and cwd', () => {
@@ -12,6 +14,8 @@ describe('ProcessSpawner', () => {
 
     ps.chCwd('/tmp');
     expect(ps.cwd).eq('/tmp', 'Correctly change cwd');
+
+    expect(ps.cmd).eq('ls foo bar', 'Correctly compute full cmd');
   });
 
   it('execute `ls -l` in /tmp using chcwd', async () => {
@@ -28,6 +32,31 @@ describe('ProcessSpawner', () => {
     const ps: ProcessSpawner = new ProcessSpawner('/bin/ls');
     const res: string = await ps.arg('-ld').arg('/tmp').exec();
     expect(res).contains('/tmp');
+  });
+
+  it('Display spinner correctly', async () => {
+    /**
+     * Create custom Writable to be able to test spinner return
+     */
+    let output: string = '';
+    class StrWriter extends Writable {
+      /* tslint:disable */
+      public _write(chunk: Buffer, encoding: Encoding, done: () => void): void {
+        output = chunk.toString().trim();
+      }
+    }
+
+    const ps: ProcessSpawner = new ProcessSpawner('/bin/ls');
+    await ps.arg('-ld').arg('/tmp').execWithSpinner({
+      stream: new StrWriter(),
+    });
+    expect(output).eq('- Executing: /bin/ls -ld /tmp');
+
+    await ps.execWithSpinner({
+      stream: new StrWriter(),
+      text: 'test'
+    });
+    expect(output).eq('- test');
   });
 
   it('execute wrong cmd', async () => {
