@@ -1,7 +1,8 @@
 import { ChildProcess, spawn } from 'child_process';
 import debug from 'debug';
-import ora, { Ora, Options } from 'ora';
+import ora, { Options, Ora } from 'ora';
 import { basename } from 'path';
+import yargs, { Arguments } from 'yargs';
 
 /**
  * Helper class to easily spawm process
@@ -13,6 +14,8 @@ export class ProcessSpawner {
 
   protected _cwd: string = '';
 
+  protected _dryRun: Boolean = false;
+
   private _log: debug.IDebugger;
 
   constructor(process: string) {
@@ -20,8 +23,17 @@ export class ProcessSpawner {
     this._log = debug(`process:${basename(process)}`);
   }
 
-  public arg(arg: string): ProcessSpawner {
-    this._args.push(arg);
+  public static create(process: string): ProcessSpawner {
+    const ps: ProcessSpawner = new ProcessSpawner(process);
+    return ps;
+  }
+
+  public arg(arg: string | unknown): ProcessSpawner {
+    if (typeof arg === 'string') {
+      this._args.push(arg);
+    } else {
+      this._log(`Unknown argument type: ${arg}`);
+    }
 
     return this;
   }
@@ -40,6 +52,14 @@ export class ProcessSpawner {
 
   get cwd(): string {
     return `${this._cwd}`;
+  }
+
+  public chDryRun(dr: Boolean | unknown): ProcessSpawner {
+    if (typeof dr === 'boolean') {
+      this._dryRun = dr;
+    }
+
+    return this;
   }
 
   public chCwd(cwd: string): ProcessSpawner {
@@ -71,6 +91,15 @@ export class ProcessSpawner {
       cwd: this._cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
+
+    // Run cmd in dry run, with a fake timeour of 100ms
+    if (yargs.argv['dryRun']) {
+      return new Promise<string>((resolve: (res: string) => void): void => {
+        setTimeout((): void => {
+          resolve('');
+        }, 100);
+      });
+    }
 
     return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
       const chunks: Uint8Array[] = [];

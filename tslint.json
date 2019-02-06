@@ -7,6 +7,11 @@
       "no-implicit-dependencies": false,
       "newline-per-chained-call": false,
       "member-ordering": true,
-      "variable-name": false
+      "variable-name": false,
+      "function-name": [true, {
+        "static-method-regex": "^[a-z][\\w\\d]+$"
+      }],
+      "no-http-string": false,
+      "not-aligned": false,
   }
 }

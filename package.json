@@ -47,10 +47,12 @@
     "typescript": "^3.2.4"
   },
   "dependencies": {
+    "@types/async": "^2.4.0",
     "@types/debug": "0.0.31",
     "@types/ora": "^3.0.0",
+    "async": "^2.6.1",
     "debug": "^4.1.1",
     "ora": "^3.0.0",
-    "yargs": "^12.0.5"
+    "yargs": "^13.0.0-candidate.0"
   }
 }

@@ -1,8 +1,7 @@
 import { expect } from 'chai';
 import { before, describe, it } from 'mocha';
-import { ProcessSpawner } from '../src/lib/ProcessSpawner';
 import { Writable } from 'stream';
-import { Encoding } from 'tslint/lib/utils';
+import { ProcessSpawner } from '../src/lib/ProcessSpawner';
 
 describe('ProcessSpawner', () => {
   it('change opts, and cwd', () => {
@@ -41,7 +40,7 @@ describe('ProcessSpawner', () => {
     let output: string = '';
     class StrWriter extends Writable {
       /* tslint:disable */
-      public _write(chunk: Buffer, encoding: Encoding, done: () => void): void {
+      public _write(chunk: Buffer, encoding: string, done: () => void): void {
         output = chunk.toString().trim();
       }
     }
