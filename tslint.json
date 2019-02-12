@@ -1,19 +1,33 @@
 {
   "extends": ["tslint-microsoft-contrib"],
   "rules": {
-      "trailing-comma": true,
-      "no-relative-imports": false,
-      "no-implicit-dependencies": false,
-      "newline-per-chained-call": false,
-      "member-ordering": true,
-      "variable-name": false,
-      "function-name": [true, {
-        "static-method-regex": "^[a-z][\\w\\d]+$"
-      }],
-      "no-http-string": false,
-      "not-aligned": false,
-      "align": false,
-      "no-unsafe-any": false
+    "trailing-comma": true,
+    "no-relative-imports": false,
+    "no-implicit-dependencies": false,
+    "newline-per-chained-call": false,
+    "member-ordering": [true,
+      {
+        "order": [
+          "public-static-field",
+          "private-static-field",
+          "public-instance-field",
+          "private-instance-field",
+          "public-constructor",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
+        ]
+      }
+    ],
+    "variable-name": false,
+    "function-name": [true, {
+      "static-method-regex": "^[a-z][\\w\\d]+$"
+    }],
+    "no-http-string": false,
+    "not-aligned": false,
+    "align": false,
+    "no-unsafe-any": false
   },
   "linterOptions": {
     "exclude": ["test/**"]
