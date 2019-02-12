@@ -9,7 +9,9 @@
   "scripts": {
     "test": "npm run lint && nyc mocha",
     "start": "ts-node src/index.ts",
+    "prebuild": "rimraf lib",
     "build": "tsc -p .",
+    "postbuild": "cpr src/presets lib/presets",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "tslint -c tslint.json --project .",
     "tsc": "tsc"
@@ -38,9 +40,11 @@
     "@types/node": "^10.12.18",
     "@types/yargs": "^12.0.8",
     "chai": "^4.2.0",
+    "cpr": "^3.0.1",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.9",
     "nyc": "^13.1.0",
+    "rimraf": "^2.6.3",
     "source-map-support": "^0.5.10",
     "ts-node": "^8.0.1",
     "tslint": "^5.12.1",
@@ -56,6 +60,6 @@
     "debug": "^4.1.1",
     "ora": "^3.0.0",
     "tmp": "0.0.33",
-    "yargs": "^13.0.0-candidate.0"
+    "yargs": "^13.1.0"
   }
 }

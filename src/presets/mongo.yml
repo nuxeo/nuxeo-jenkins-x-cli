@@ -1,0 +1,9 @@
+helm:
+  - chart: jenkins-x/nuxeo-mongodb
+nuxeo:
+  - vcs:
+    - core: mongo
+    - base: nuxeo.test.mongodb
+    - properties:
+      - server: mongodb://{{APP_NAME}}.{{NAMESPACE}}.svc.cluster.local
+      - dbname: vcstest

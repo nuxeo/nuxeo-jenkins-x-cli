@@ -1,5 +1,6 @@
 import debug from 'debug';
 import { Arguments, Argv, CommandModule } from 'yargs';
+import { PresetCommand } from './Nuxeo/PresetCommand';
 import { VCSCommand } from './Nuxeo/VCSCommand';
 
 /**
@@ -14,6 +15,7 @@ export class NuxeoCommand implements CommandModule {
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.command(new VCSCommand());
+    args.command(new PresetCommand());
     args.demandCommand();
 
     return args;
