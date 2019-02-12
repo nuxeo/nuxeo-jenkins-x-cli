@@ -26,7 +26,7 @@ export class HelmCommand implements CommandModule {
         default: 'http://jenkins-x-chartmuseum:8080',
       },
       namespace: {
-        alias: ['ns'],
+        alias: ['n'],
         describe: 'Target Kubernetes namespace.',
         required: true,
       },

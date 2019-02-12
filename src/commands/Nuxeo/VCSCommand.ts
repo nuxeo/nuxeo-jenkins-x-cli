@@ -90,6 +90,10 @@ export class VCSCommand implements CommandModule {
       throw new Error(`File ${file} already exists. User --force to override the existing file.`);
     }
 
+    if (yargs.argv.dryRun === true) {
+      return;
+    }
+
     const flag: string = force ? 'w' : 'wx';
     fs.writeFileSync(file, data, {
       flag,
