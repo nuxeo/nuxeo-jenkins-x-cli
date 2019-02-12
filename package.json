@@ -8,8 +8,9 @@
   },
   "scripts": {
     "pretest": "yarn run lint --fix",
-    "test": "nyc mocha",
+    "test": "yarn run lint && nyc mocha",
     "start": "ts-node src/index.ts",
+    "debug": "DEBUG=* ts-node src/index.ts",
     "prebuild": "rimraf lib",
     "build": "tsc -p .",
     "postbuild": "cpr src/presets lib/presets && cp src/njx.js lib",
