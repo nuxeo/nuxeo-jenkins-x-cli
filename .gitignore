@@ -7,3 +7,5 @@ package-lock.json
 npm-debug.log
 test-results.xml
 .nyc_output/*
+yarn.lock
+*.iml
