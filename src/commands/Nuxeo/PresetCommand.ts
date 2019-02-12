@@ -32,6 +32,10 @@ export class PresetCommand implements CommandModule {
     return args;
   }
 
+  public handler = async (args: Arguments): Promise<void> => {
+    return Promise.resolve();
+  }
+
   protected prepareYaml: MiddlewareFunction = async (args: Arguments): Promise<void> => {
     if (args._nx !== undefined) {
       return Promise.resolve();
@@ -53,10 +57,6 @@ export class PresetCommand implements CommandModule {
     log(yml);
     args._nx = { yml, ...args._nx };
 
-    return Promise.resolve();
-  }
-
-  public handler = async (args: Arguments): Promise<void> => {
     return Promise.resolve();
   }
 }

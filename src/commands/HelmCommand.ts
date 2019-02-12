@@ -9,11 +9,11 @@ import { InstallCommand } from './Helm/InstallCommand';
  * Helm command wrapper
  */
 export class HelmCommand implements CommandModule {
-  private readonly log: debug.IDebugger = debug('command:helm');
 
   public command: string = 'helm';
 
   public describe: string = 'Entrypoint for helm commands';
+  private readonly log: debug.IDebugger = debug('command:helm');
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.middleware(this.helmInit);
