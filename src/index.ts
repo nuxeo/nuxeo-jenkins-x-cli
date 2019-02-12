@@ -11,7 +11,9 @@ yargs
   .command(new NuxeoCommand())
   .option({
     'dry-run': {
-      describe: 'Do not change anything in the system'
+      describe: 'Do not change anything in the system',
+      default: false,
+      type: 'boolean'
     }
   })
   .demandCommand()
