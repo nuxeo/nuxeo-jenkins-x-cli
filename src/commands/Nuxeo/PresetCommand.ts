@@ -7,6 +7,7 @@ import process from 'process';
 import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { InstallCommand } from './Preset/InstallCommand';
 import { PurgeCommand } from './Preset/PurgeCommand';
+import { PreviewCommand } from './PreviewCommand';
 
 const log: debug.IDebugger = debug('command:nuxeo:preset');
 
@@ -21,6 +22,7 @@ export class PresetCommand implements CommandModule {
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.command(new InstallCommand());
     args.command(new PurgeCommand());
+    args.command(new PreviewCommand());
     args.options({
       name: {
         alias: ['n'],
