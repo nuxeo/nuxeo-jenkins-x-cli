@@ -2,11 +2,14 @@ import debug from 'debug';
 import { existsSync } from 'fs';
 import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
-import { InstallCommand } from './Helm/InstallCommand';
 import { CleanupCommand } from './Helm/CleanupCommand';
+import { InstallCommand } from './Helm/InstallCommand';
 
+/**
+ * Helm command wrapper
+ */
 export class HelmCommand implements CommandModule {
-  private log: debug.IDebugger = debug('command:helm');
+  private readonly log: debug.IDebugger = debug('command:helm');
 
   public command: string = 'helm';
 
@@ -46,7 +49,7 @@ export class HelmCommand implements CommandModule {
         .arg(args['repo-host'])
         .execWithSpinner();
     } else {
-      this.log(`Helm home initialized in: ${helmHome}`)
+      this.log(`Helm home initialized in: ${helmHome}`);
     }
 
     return Promise.resolve();

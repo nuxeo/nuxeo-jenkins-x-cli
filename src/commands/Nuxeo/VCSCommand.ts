@@ -1,8 +1,7 @@
 import debug from 'debug';
-import fs from 'fs';
-import { Arguments, CommandModule, Argv } from 'yargs';
+import fs, { PathLike } from 'fs';
+import yargs, { Arguments, Argv, CommandModule } from 'yargs';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
-import yargs = require('yargs');
 
 const log: debug.IDebugger = debug('command:nuxeo:vcs');
 
@@ -39,7 +38,9 @@ export class VCSCommand implements CommandModule {
         describe: 'Remove header from generated properties file.'
       }
     });
-    args.example('$0 nuxeo vcs -p.server localhost -p.db my-DB nuxeo-test-vcs.properties', 'Generates a `nuxeo-test-vcs.properties` file with two lines: `nuxeo.test.vcs.db=my-DB` and `nuxeo.test.vcs.server=localhost`.')
+    args.example('$0 nuxeo vcs -p.server localhost -p.db my-DB nuxeo-test-vcs.properties',
+      'Generates a `nuxeo-test-vcs.properties` file with two lines:' +
+      '`nuxeo.test.vcs.db=my-DB` and `nuxeo.test.vcs.server=localhost`.');
 
     return args;
   }
@@ -48,6 +49,7 @@ export class VCSCommand implements CommandModule {
     if (!(typeof args.p === 'object')) {
       return Promise.reject(`'properties' options must be an object. Type: ${typeof args.p}`);
     }
+
     const properties: string[] = this.generateContent(args.base, { ...args.p });
 
     this.writePropertiesFile(args.file, properties.join('\n'), args.force);
@@ -58,6 +60,7 @@ export class VCSCommand implements CommandModule {
   /**
    * Generate properties content
    */
+  // tslint:disable-next-line:no-any
   protected generateContent(base: any, obj: any, noHeader: any = false): string[] {
     const properties: string[] = [];
     if (!noHeader) {
@@ -67,6 +70,7 @@ export class VCSCommand implements CommandModule {
     Object.keys(obj).forEach((key: string) => {
       if (typeof obj[key] === 'object') {
         log(`Unable to parse param: ${key} (${typeof obj[key]})`);
+
         return;
       }
       log(`Adding entry - ${key}: (${obj[key]})`);
@@ -75,10 +79,13 @@ export class VCSCommand implements CommandModule {
 
     // Add empty line at the end
     properties.push('');
+
     return properties;
   }
 
+  // tslint:disable-next-line:no-any
   protected writePropertiesFile(file: any, data: string, force: any = false): void {
+    /* tslint:disable:non-literal-fs-path */
     if (!force && fs.existsSync(file)) {
       throw new Error(`File ${file} already exists. User --force to override the existing file.`);
     }

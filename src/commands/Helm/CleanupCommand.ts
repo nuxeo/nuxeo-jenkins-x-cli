@@ -17,7 +17,7 @@ export class CleanupCommand implements CommandModule {
       type: 'string',
       demandOption: true,
     }
-  }
+  };
 
   public handler = async (args: Arguments): Promise<void> => {
     await ProcessSpawner.create('helm')
@@ -26,7 +26,7 @@ export class CleanupCommand implements CommandModule {
       .arg('--purge')
       .execWithSpinner()
       .catch(() => {
-        log(`App name doesn't exists: ${args.name}`)
+        log(`App name doesn't exists: ${args.name}`);
       });
 
     await ProcessSpawner.create('kubectl')
@@ -34,7 +34,7 @@ export class CleanupCommand implements CommandModule {
       .arg('ns').arg(args.namespace)
       .execWithSpinner()
       .catch(() => {
-        log(`Namespace doesn't exists: ${args.namespace}`)
+        log(`Namespace doesn't exists: ${args.namespace}`);
       });
 
     return Promise.resolve();

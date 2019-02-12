@@ -16,7 +16,7 @@ export class ProcessSpawner {
 
   protected _dryRun: Boolean = false;
 
-  private _log: debug.IDebugger;
+  private readonly _log: debug.IDebugger;
 
   constructor(process: string) {
     this._process = process;
@@ -24,8 +24,7 @@ export class ProcessSpawner {
   }
 
   public static create(process: string): ProcessSpawner {
-    const ps: ProcessSpawner = new ProcessSpawner(process);
-    return ps;
+    return new ProcessSpawner(process);
   }
 
   public arg(arg: string | unknown): ProcessSpawner {
@@ -93,7 +92,7 @@ export class ProcessSpawner {
     });
 
     // Run cmd in dry run, with a fake timeour of 100ms
-    if (yargs.argv['dryRun']) {
+    if (yargs.argv.dryRun === true) {
       return new Promise<string>((resolve: (res: string) => void): void => {
         setTimeout((): void => {
           resolve('');

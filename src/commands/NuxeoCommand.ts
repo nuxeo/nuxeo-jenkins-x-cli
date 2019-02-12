@@ -2,8 +2,11 @@ import debug from 'debug';
 import { Arguments, Argv, CommandModule } from 'yargs';
 import { VCSCommand } from './Nuxeo/VCSCommand';
 
+/**
+ * Nuxeo Command to wrapper Nuxeo requirements
+ */
 export class NuxeoCommand implements CommandModule {
-  private log: debug.IDebugger = debug('command:nuxeo');
+  private readonly log: debug.IDebugger = debug('command:nuxeo');
 
   public command: string = 'nuxeo';
 

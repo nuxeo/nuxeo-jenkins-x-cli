@@ -1,6 +1,5 @@
 {
   "extends": ["tslint-microsoft-contrib"],
-  "rulesDirectory": ["node_modules/tslint-microsoft-contrib"],
   "rules": {
       "trailing-comma": true,
       "no-relative-imports": false,
@@ -12,7 +11,9 @@
         "static-method-regex": "^[a-z][\\w\\d]+$"
       }],
       "no-http-string": false,
-      "not-aligned": false
+      "not-aligned": false,
+      "align": false,
+      "no-unsafe-any": false
   },
   "linterOptions": {
     "exclude": ["test/**"]

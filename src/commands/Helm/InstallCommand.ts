@@ -17,7 +17,7 @@ export class InstallCommand implements CommandModule {
       type: 'string',
       demandOption: true,
     }
-  }
+  };
 
   public handler = async (args: Arguments): Promise<void> => {
     await ProcessSpawner.create('helm')
