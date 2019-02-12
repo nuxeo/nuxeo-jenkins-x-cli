@@ -7,7 +7,7 @@
     "njx": "lib/index.js"
   },
   "scripts": {
-    "test": "npm run lint && nyc mocha",
+    "test": "yarn run lint && nyc mocha",
     "start": "ts-node src/index.ts",
     "prebuild": "rimraf lib",
     "build": "tsc -p .",
