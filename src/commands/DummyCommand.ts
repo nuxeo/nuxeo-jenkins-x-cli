@@ -12,7 +12,6 @@ export class DummyCommand implements CommandModule {
   public describe: string = 'A wonderful dummy command';
 
   public handler = (args: Arguments): void => {
-    log('Dummy Cmds');
     log(args);
   }
 }

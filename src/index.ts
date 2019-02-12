@@ -6,13 +6,11 @@ import { HelmCommand } from './commands/HelmCommand';
 import { NuxeoCommand } from './commands/NuxeoCommand';
 
 yargs
-  .command(new DummyCommand())
   .command(new CleanupCommand())
   .command(new HelmCommand())
   .command(new NuxeoCommand())
   .option({
     'dry-run': {
-      alias: ['n'],
       describe: 'Do not change anything in the system'
     }
   })
