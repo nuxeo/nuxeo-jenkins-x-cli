@@ -5,10 +5,6 @@ import { ProcessSpawner } from '../lib/ProcessSpawner';
 import { InstallCommand } from './Helm/InstallCommand';
 import { CleanupCommand } from './Helm/CleanupCommand';
 
-interface IHelmCommandArgs extends Arguments {
-  'repo-host': string;
-}
-
 export class HelmCommand implements CommandModule {
   private log: debug.IDebugger = debug('command:helm');
 

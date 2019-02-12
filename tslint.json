@@ -12,6 +12,9 @@
         "static-method-regex": "^[a-z][\\w\\d]+$"
       }],
       "no-http-string": false,
-      "not-aligned": false,
+      "not-aligned": false
+  },
+  "linterOptions": {
+    "exclude": ["test/**"]
   }
 }

@@ -3,11 +3,13 @@ import yargs, { Arguments } from 'yargs';
 import { CleanupCommand } from './commands/CleanupCommand';
 import { DummyCommand } from './commands/DummyCommand';
 import { HelmCommand } from './commands/HelmCommand';
+import { NuxeoCommand } from './commands/NuxeoCommand';
 
 yargs
   .command(new DummyCommand())
   .command(new CleanupCommand())
   .command(new HelmCommand())
+  .command(new NuxeoCommand())
   .option({
     'dry-run': {
       alias: ['n'],
