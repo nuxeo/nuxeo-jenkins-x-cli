@@ -1,5 +1,8 @@
 import debug from 'debug';
-import { Arguments, Argv, CommandModule } from 'yargs';
+import fs from 'fs';
+import yaml, { LoadOptions } from 'js-yaml';
+import path from 'path';
+import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { InstallCommand } from './Preset/InstallCommand';
 import { PurgeCommand } from './Preset/PurgeCommand';
 
@@ -23,9 +26,34 @@ export class PresetCommand implements CommandModule {
         required: true,
       }
     });
+    args.middleware(this.prepareYaml);
     args.demandCommand();
 
     return args;
+  }
+
+  protected prepareYaml: MiddlewareFunction = async (args: Arguments): Promise<void> => {
+    if (args._nx !== undefined) {
+      return Promise.resolve();
+    }
+
+    if (require.main === undefined) {
+      return Promise.reject('Error occured...');
+    }
+
+    const filename: string = path.resolve(path.dirname(require.main.filename), 'presets', `${args.name}.yml`);
+    /* tslint:disable:non-literal-fs-path */
+    if (!fs.existsSync(filename)) {
+      log(`File ${filename} is unknown.`);
+
+      return Promise.reject(`File ${args.name}.yml doesn't exist.`);
+    }
+
+    const yml: LoadOptions = yaml.load(fs.readFileSync(filename, 'utf-8'));
+    log(yml);
+    args._nx = { yml, ...args._nx };
+
+    return Promise.resolve();
   }
 
   public handler = async (args: Arguments): Promise<void> => {
