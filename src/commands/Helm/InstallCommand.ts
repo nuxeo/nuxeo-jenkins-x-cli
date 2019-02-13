@@ -1,8 +1,5 @@
-import debug from 'debug';
 import { Arguments, CommandModule, Options } from 'yargs';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
-
-const log: debug.IDebugger = debug('command:helm:install');
 
 /**
  * Helm Install wrapper
