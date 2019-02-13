@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'child_process';
 import debug from 'debug';
 import ora, { Options, Ora } from 'ora';
 import { basename } from 'path';
-import yargs, { Arguments } from 'yargs';
+import yargs from 'yargs';
 
 /**
  * Helper class to easily spawm process
