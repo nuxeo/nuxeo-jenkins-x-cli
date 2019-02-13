@@ -4,14 +4,14 @@
   "description": "Nuxeo Jenkins X CLI",
   "main": "lib/index.js",
   "bin": {
-    "njx": "lib/index.js"
+    "njx": "lib/njx.js"
   },
   "scripts": {
     "test": "npm run lint && nyc mocha",
     "start": "ts-node src/index.ts",
     "prebuild": "rimraf lib",
     "build": "tsc -p .",
-    "postbuild": "cpr src/presets lib/presets",
+    "postbuild": "cpr src/presets lib/presets && cp src/njx.js lib",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "tslint -c tslint.json --project .",
     "tsc": "tsc"

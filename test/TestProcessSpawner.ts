@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { before, describe, it } from 'mocha';
+import { describe, it } from 'mocha';
 import { Writable } from 'stream';
 import { ProcessSpawner } from '../src/lib/ProcessSpawner';
 

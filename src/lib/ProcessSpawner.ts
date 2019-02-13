@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'child_process';
 import debug from 'debug';
 import ora, { Options, Ora } from 'ora';
 import { basename } from 'path';
-import yargs from 'yargs';
+import yargs, { Arguments } from 'yargs';
 
 /**
  * Helper class to easily spawm process
@@ -14,17 +14,40 @@ export class ProcessSpawner {
 
   protected _cwd: string = '';
 
-  protected _dryRun: Boolean = false;
+  protected _dryRun: boolean = false;
 
   private readonly _log: debug.IDebugger;
 
   constructor(process: string) {
     this._process = process;
     this._log = debug(`process:${basename(process)}`);
+    this._dryRun = yargs.argv.dryRun === true;
   }
 
+  // tslint:disable-next-line:no-any
   public static create(process: string): ProcessSpawner {
     return new ProcessSpawner(process);
+  }
+
+  // tslint:disable-next-line:no-any
+  public static createSub(args?: Arguments): ProcessSpawner {
+    if (require.main === undefined) {
+      throw new Error('Initialization Error');
+    }
+
+    // Handle test...
+    let ps: ProcessSpawner;
+    if (require.main.filename.endsWith('.ts')) {
+      ps = ProcessSpawner.create('yarn').arg('run').arg('start');
+    } else {
+      ps = ProcessSpawner.create(require.main.filename);
+    }
+
+    if (args !== undefined && args.dryRun === true) {
+      ps.arg('--dry-run');
+    }
+
+    return ps;
   }
 
   public arg(arg: string | unknown): ProcessSpawner {
@@ -53,10 +76,8 @@ export class ProcessSpawner {
     return `${this._cwd}`;
   }
 
-  public chDryRun(dr: Boolean | unknown): ProcessSpawner {
-    if (typeof dr === 'boolean') {
-      this._dryRun = dr;
-    }
+  public chDryRun(dr: boolean | unknown): ProcessSpawner {
+    this._dryRun = dr === true;
 
     return this;
   }
@@ -92,7 +113,7 @@ export class ProcessSpawner {
     });
 
     // Run cmd in dry run, with a fake timeour of 100ms
-    if (yargs.argv.dryRun === true) {
+    if (this._dryRun) {
       return new Promise<string>((resolve: (res: string) => void): void => {
         setTimeout((): void => {
           resolve('');
