@@ -1,7 +1,6 @@
-import yargs, { Arguments } from 'yargs';
+import yargs from 'yargs';
 
 import { CleanupCommand } from './commands/CleanupCommand';
-import { DummyCommand } from './commands/DummyCommand';
 import { HelmCommand } from './commands/HelmCommand';
 import { NuxeoCommand } from './commands/NuxeoCommand';
 

@@ -1,7 +1,6 @@
 import debug from 'debug';
-import fs, { PathLike } from 'fs';
+import fs from 'fs';
 import yargs, { Arguments, Argv, CommandModule } from 'yargs';
-import { ProcessSpawner } from '../../lib/ProcessSpawner';
 
 const log: debug.IDebugger = debug('command:nuxeo:vcs');
 
@@ -87,7 +86,7 @@ export class VCSCommand implements CommandModule {
   protected writePropertiesFile(file: any, data: string, force: any = false): void {
     /* tslint:disable:non-literal-fs-path */
     if (!force && fs.existsSync(file)) {
-      throw new Error(`File ${file} already exists. User --force to override the existing file.`);
+      throw new Error(`File ${file} already exists. Use --force opts to override the existing file.`);
     }
 
     if (yargs.argv.dryRun === true) {
