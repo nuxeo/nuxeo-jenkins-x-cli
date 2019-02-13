@@ -25,11 +25,21 @@ export class VCSCommand implements CommandModule {
         default: false,
         type: 'boolean',
       },
+      core: {
+        default: undefined,
+        describe: 'Nuxeo Test Core'
+      },
       base: {
         alias: ['b'],
         default: 'nuxeo.test.vcs',
         type: 'string',
         describe: 'Change properties base. Use dots (.) for implicit object path.'
+      },
+      append: {
+        alias: ['a'],
+        default: 'false',
+        type: 'boolean',
+        describe: 'Append generated content to the target file.'
       },
       'no-header': {
         type: 'boolean',
@@ -49,9 +59,14 @@ export class VCSCommand implements CommandModule {
       return Promise.reject(`'properties' options must be an object. Type: ${typeof args.p}`);
     }
 
-    const properties: string[] = this.generateContent(args.base, { ...args.p });
+    const noHeader: boolean = args['no-header'] === true || args.append === true;
+    const properties: string[] = this.generateContent(args.base, { ...args.p }, noHeader);
+    // Add entry for Nuxeo Test Core value
+    if (args.core !== undefined) {
+      properties.push(`nuxeo.test.core=${args.core}`);
+    }
 
-    this.writePropertiesFile(args.file, properties.join('\n'), args.force);
+    this.writePropertiesFile(args.file, properties.join('\n'), args.force === true, args.append === true);
 
     return Promise.resolve();
   }
@@ -60,7 +75,7 @@ export class VCSCommand implements CommandModule {
    * Generate properties content
    */
   // tslint:disable-next-line:no-any
-  protected generateContent(base: any, obj: any, noHeader: any = false): string[] {
+  protected generateContent(base: any, obj: any, noHeader: boolean = false): string[] {
     const properties: string[] = [];
     if (!noHeader) {
       properties.push('#Generated with Nuxeo Jenkins X CLI');
@@ -83,7 +98,7 @@ export class VCSCommand implements CommandModule {
   }
 
   // tslint:disable-next-line:no-any
-  protected writePropertiesFile(file: any, data: string, force: any = false): void {
+  protected writePropertiesFile(file: any, data: string, force: boolean = false, append: boolean = false): void {
     /* tslint:disable:non-literal-fs-path */
     if (!force && fs.existsSync(file)) {
       throw new Error(`File ${file} already exists. Use --force opts to override the existing file.`);
@@ -93,7 +108,8 @@ export class VCSCommand implements CommandModule {
       return;
     }
 
-    const flag: string = force ? 'w' : 'wx';
+    // See: https://nodejs.org/api/fs.html#fs_file_system_flags
+    const flag: string = append ? 'a' : (force ? 'w' : 'wx');
     fs.writeFileSync(file, data, {
       flag,
     });
