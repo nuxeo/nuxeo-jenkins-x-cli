@@ -30,7 +30,7 @@ export class InstallCommand implements CommandModule {
 
     psp.arg('-b').arg(preset.nuxeo.vcs.base);
     Object.keys(preset.nuxeo.vcs.properties).forEach((elt: string) => {
-      psp.arg(`-p.${elt}`).arg(`${preset.nuxeo.vcs.properties[elt]}`);
+      psp.arg(`-p.${elt}="${preset.nuxeo.vcs.properties[elt]}"`);
     });
 
     return psp.execWithSpinner().then(async () => {
