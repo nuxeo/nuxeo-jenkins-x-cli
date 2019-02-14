@@ -24,7 +24,10 @@
     ],
     "exclude": [
       "**/*.d.ts",
-      "test/**/*.ts"
+      "test/**/*.ts",
+      "lib/**",
+      "src/*.js",
+      "src/index.ts"
     ],
     "all": true
   },
