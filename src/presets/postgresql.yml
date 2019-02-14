@@ -1,6 +1,9 @@
 helm:
   chart: jenkins-x/nuxeo-postgresql
 nuxeo:
+  templates:
+    - customdb
+    - postgresql
   vcs:
     base: nuxeo.test.vcs
     properties:

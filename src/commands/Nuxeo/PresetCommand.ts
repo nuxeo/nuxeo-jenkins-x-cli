@@ -1,7 +1,9 @@
 import debug from 'debug';
 import fs from 'fs';
-import yaml, { LoadOptions } from 'js-yaml';
+import yaml from 'js-yaml';
+import Mustache from 'mustache';
 import path from 'path';
+import process from 'process';
 import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { InstallCommand } from './Preset/InstallCommand';
 import { PurgeCommand } from './Preset/PurgeCommand';
@@ -26,7 +28,7 @@ export class PresetCommand implements CommandModule {
         required: true,
       }
     });
-    args.middleware(this.prepareYaml);
+    args.middleware(this.addPresetConfiguration);
     args.demandCommand();
 
     return args;
@@ -36,27 +38,33 @@ export class PresetCommand implements CommandModule {
     return Promise.resolve();
   }
 
-  protected prepareYaml: MiddlewareFunction = async (args: Arguments): Promise<void> => {
-    if (args._nx !== undefined) {
-      return Promise.resolve();
-    }
-
-    if (require.main === undefined) {
-      return Promise.reject('Error occured...');
-    }
-
-    const filename: string = path.resolve(path.dirname(require.main.filename), 'presets', `${args.name}.yml`);
-    /* tslint:disable:non-literal-fs-path */
+  // tslint:disable-next-line:no-any
+  protected readYaml = (filename: string, ctx: {} = {}): any => {
+    // tslint:disable:non-literal-fs-path
     if (!fs.existsSync(filename)) {
       log(`File ${filename} is unknown.`);
 
-      return Promise.reject(`File ${args.name}.yml doesn't exist.`);
+      throw new Error(`File ${filename}.yml doesn't exist.`);
     }
 
-    const yml: LoadOptions = yaml.load(fs.readFileSync(filename, 'utf-8'));
+    return yaml.load(Mustache.render(fs.readFileSync(filename, 'utf-8'), ctx));
+  }
+
+  protected addPresetConfiguration: MiddlewareFunction = (args: Arguments): void => {
+    if (args._nx !== undefined) {
+      return;
+    }
+
+    if (require.main === undefined) {
+      throw new Error('Error occured...');
+    }
+
+    const filename: string = path.resolve(path.dirname(require.main.filename), 'presets', `${args.name}.yml`);
+    // tslint:disable-next-line:no-any
+    const yml: any = this.readYaml(filename, process.env);
     log(yml);
     args._nx = { yml, ...args._nx };
 
-    return Promise.resolve();
+    return;
   }
 }
