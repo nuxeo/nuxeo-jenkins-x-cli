@@ -40,6 +40,8 @@ export class InstallCommand implements CommandModule {
         .arg('--name').arg(args.name)
         .arg(preset.helm.chart)
         .execWithSpinner();
+    }).then(async () => {
+      return preset.nuxeo.templates.join(',');
     });
   }
 }
