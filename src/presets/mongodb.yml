@@ -1,6 +1,9 @@
 helm:
   chart: jenkins-x/nuxeo-mongodb
 nuxeo:
+  templates:
+    - customdb
+    - mongodb
   vcs:
     core: mongo
     base: nuxeo.test.mongodb

@@ -36,11 +36,12 @@ export class ProcessSpawner {
     }
 
     // Handle test...
+    const filename: string = require.main.filename;
     let ps: ProcessSpawner;
-    if (require.main.filename.endsWith('.ts')) {
+    if (filename.endsWith('.ts') || filename.endsWith('mocha')) {
       ps = ProcessSpawner.create('yarn').arg('run').arg('start');
     } else {
-      ps = ProcessSpawner.create(require.main.filename);
+      ps = ProcessSpawner.create(filename);
     }
 
     if (args !== undefined && args.dryRun === true) {
