@@ -30,11 +30,22 @@ export class FilterLabels implements CommandModule {
     return args;
   }
 
-  public handler = (args: Arguments): string[] => {
+  public handler = (args: Arguments): void => {
     this.log(args);
     // Get the list of labels and the mode to use for the filtering
     const labels: string[] = <string[]>args.labels;
     const mode: string = <string>args.mode;
+
+    // Write on the stdout stream the filtered list
+    process.stdout.write(`${this.filterLabels(labels, mode)}`);
+  }
+
+  /**
+   * Filter the labels for the given mode.
+   * @param labels The list of labels in input
+   * @param mode The mode to use for filtering the labels
+   */
+  protected filterLabels(labels: string[], mode: string): string[] {
     // Filter the labels starting with `${mode}/`
     const filtered: string[] = labels.filter((label: string) => label.startsWith(`${mode}/`))
       .map((label: string) => label.substring(mode.length + 1));
