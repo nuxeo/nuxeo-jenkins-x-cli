@@ -38,6 +38,7 @@ export class InstallCommand implements CommandModule {
         .arg('helm')
         .arg('install')
         .arg('--name').arg(args.name)
+        .arg('--namespace').arg(args.namespace)
         .arg(preset.helm.chart)
         .execWithSpinner();
     }).then(async () => {

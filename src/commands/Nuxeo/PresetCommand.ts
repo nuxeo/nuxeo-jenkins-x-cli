@@ -25,9 +25,13 @@ export class PresetCommand implements CommandModule {
     args.command(new PreviewCommand());
     args.options({
       name: {
-        alias: ['n'],
         describe: 'Preset\'s name.',
-        required: true,
+        required: true
+      },
+      namespace: {
+        alias: ['n'],
+        describe: 'Kubernetes target namespace',
+        require: true
       }
     });
     args.middleware(this.addPresetConfiguration);
