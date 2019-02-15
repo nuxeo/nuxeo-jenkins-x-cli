@@ -14,6 +14,7 @@ export class PurgeCommand implements CommandModule {
       .arg('helm')
       .arg('cleanup')
       .arg('--name').arg(args.name)
+      .arg('--namespace').arg(args.namespace)
       .execWithSpinner();
   }
 }
