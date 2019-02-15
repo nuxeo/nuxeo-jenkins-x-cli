@@ -9,7 +9,7 @@ export class FilterLabels implements CommandModule {
 
   public describe: string = 'Filter the labels for the given mode (test or preview)';
 
-  private readonly log: debug.IDebugger = debug('command:pr:filter-labels');
+  private readonly _log: debug.IDebugger = debug('command:pr:filter-labels');
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.options({
@@ -26,12 +26,14 @@ export class FilterLabels implements CommandModule {
         required: 'true',
       }
     });
+    args.example('$0 pr filter-labels -m test -l test/mongodb test/postgres preview/mongodb',
+      'Filter the labels from the given list only for the `test` mode');
 
     return args;
   }
 
   public handler = (args: Arguments): void => {
-    this.log(args);
+    this._log(args);
     // Get the list of labels and the mode to use for the filtering
     const labels: string[] = <string[]>args.labels;
     const mode: string = <string>args.mode;
@@ -49,7 +51,7 @@ export class FilterLabels implements CommandModule {
     // Filter the labels starting with `${mode}/`
     const filtered: string[] = labels.filter((label: string) => label.startsWith(`${mode}/`))
       .map((label: string) => label.substring(mode.length + 1));
-    this.log(`Filtered labels ${filtered}`);
+    this._log(`Filtered labels ${filtered}`);
 
     return filtered;
   }
