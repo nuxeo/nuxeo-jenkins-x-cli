@@ -65,28 +65,28 @@ export class PreviewCommand implements CommandModule {
       return;
     }
 
-    switch (args.name) {
-      case 'mongodb': {
-        fs.appendFileSync('values.yaml', '\nnuxeo:\n mongodb:\n  deploy: false');
-        fs.appendFileSync('values.yaml', '\nnuxeo:\n postgresql:\n  deploy: true');
-        break;
-      }
-      case 'postgresql': {
-        fs.appendFileSync('values.yaml', '\nnuxeo:\n mongodb:\n  deploy: true');
-        fs.appendFileSync('values.yaml', '\nnuxeo:\n postgresql:\n  deploy: false');
-        break;
-      }
-      default:
-    }
-
     if (process.platform !== DARWIN && process.platform !== LINUX) {
       throw new Error('This OS is not supported. Only Darwin and Linux.');
     }
 
-    this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', 'Chart.yaml');
-    this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', 'values.yaml');
+    const valuesFile: string = `${args.previewDir}/values.yaml`;
+    const chartFile: string = `${args.previewDir}/Chart.yaml`;
+    /* tslint:disable:non-literal-fs-path */
+    if (!fs.existsSync(valuesFile)) {
+      log(`File ${valuesFile} is unknown.`);
+
+      return;
+    }
+    if (!fs.existsSync(chartFile)) {
+      log(`File ${chartFile} is unknown.`);
+
+      return;
+    }
+
+    this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
+    this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
     if (process.platform === LINUX) {
-      this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${args.ORG}\/${args.app}`, 'repostory:.*', 'values.yaml');
+      this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${args.ORG}\/${args.app}`, 'repostory:.*', valuesFile);
     }
 
     await ProcessSpawner.create('jx').execWithSpinner();
@@ -103,7 +103,7 @@ export class PreviewCommand implements CommandModule {
       .arg(args.pullSecrets)
       .arg('--dir')
       .arg('../..')
-      // we need jx ^6.3.8 - currently jx 6.3.1
+      // Since jx ^6.3.8
       // .arg('--no-comment')
       // .arg(args.noComment)
       .execWithSpinner();

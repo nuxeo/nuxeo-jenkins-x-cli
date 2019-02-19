@@ -32,6 +32,11 @@ export class PresetCommand implements CommandModule {
         alias: ['n'],
         describe: 'Kubernetes target namespace',
         require: true
+      },
+      'preview-dir': {
+        describe: 'The working preview directory',
+        require: false,
+        default: 'charts/preview'
       }
     });
     args.middleware(this.addPresetConfiguration);
@@ -70,6 +75,26 @@ export class PresetCommand implements CommandModule {
     const yml: any = this.readYaml(filename, process.env);
     log(yml);
     args._nx = { yml, ...args._nx };
+
+    const valuesFile: string = `${args.previewDir}/values.yaml`;
+    if (!fs.existsSync(valuesFile)) {
+      log(`File ${valuesFile} is unknown.`);
+
+      return;
+    }
+    switch (args.name) {
+      case 'mongodb': {
+        fs.appendFileSync(valuesFile, '\nnuxeo:\n mongodb:\n  deploy: false');
+        fs.appendFileSync(valuesFile, '\nnuxeo:\n postgresql:\n  deploy: true');
+        break;
+      }
+      case 'postgresql': {
+        fs.appendFileSync(valuesFile, '\nnuxeo:\n mongodb:\n  deploy: true');
+        fs.appendFileSync(valuesFile, '\nnuxeo:\n postgresql:\n  deploy: false');
+        break;
+      }
+      default:
+    }
 
     return;
   }
