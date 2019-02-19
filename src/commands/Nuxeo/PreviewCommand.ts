@@ -103,9 +103,8 @@ export class PreviewCommand implements CommandModule {
       .arg(args.pullSecrets)
       .arg('--dir')
       .arg('../..')
-      // Since jx ^6.3.8
-      // .arg('--no-comment')
-      // .arg(args.noComment)
+      .arg('--no-comment')
+      .arg(args.noComment)
       .execWithSpinner();
 
     return Promise.resolve();
