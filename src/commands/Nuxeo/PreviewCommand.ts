@@ -6,6 +6,8 @@ import { ProcessSpawner } from '../../lib/ProcessSpawner';
 const log: debug.IDebugger = debug('command:nuxeo:preview');
 const LINUX: string = 'linux';
 const DARWIN: string = 'darwin';
+const MONGODB: string = 'mongodb';
+const POSTGRESQL: string = 'postgresql';
 
 /**
  * Nuxeo Preview Command
@@ -22,32 +24,29 @@ export class PreviewCommand implements CommandModule {
         describe: 'Skip the comment on PR',
         type: 'boolean',
         default: false,
-      }
-    });
-    args.option({
+      },
       'log-level': {
         describe: 'Log level (ex: debug)',
         type: 'string'
-      }
-    });
-    args.option({
+      },
       'pull-secrets': {
         describe: 'Secrets to pull (ex: instance_clid)',
         type: 'string'
-      }
-    });
-    args.option({
+      },
       app: {
         describe: 'App name',
         type: 'string',
         required: true
-      }
-    });
-    args.option({
+      },
       namespace: {
         describe: 'Namespace',
         type: 'string',
         required: true
+      },
+      'preview-dir': {
+        describe: 'The working preview directory',
+        require: false,
+        default: 'charts/preview'
       }
     });
     args.example('njx nuxeo preset -n mongodb preview --app name --namespace namespace', 'Run a preview with mongodb env');
@@ -73,21 +72,32 @@ export class PreviewCommand implements CommandModule {
     const chartFile: string = `${args.previewDir}/Chart.yaml`;
     /* tslint:disable:non-literal-fs-path */
     if (!fs.existsSync(valuesFile)) {
-      log(`File ${valuesFile} is unknown.`);
+      return Promise.reject(`File ${valuesFile} is unknown.`);
 
       return;
     }
     if (!fs.existsSync(chartFile)) {
-      log(`File ${chartFile} is unknown.`);
+      return Promise.reject(`File ${chartFile} is unknown.`);
 
       return;
     }
 
+    switch (args.name) {
+      case MONGODB: {
+        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${MONGODB}:\n  deploy: false`);
+        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${POSTGRESQL}:\n  deploy: true`);
+        break;
+      }
+      case POSTGRESQL: {
+        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${MONGODB}:\n  deploy: true`);
+        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${POSTGRESQL}:\n  deploy: false`);
+        break;
+      }
+      default:
+    }
+
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
-    if (process.platform === LINUX) {
-      this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${args.ORG}\/${args.app}`, 'repostory:.*', valuesFile);
-    }
 
     await ProcessSpawner.create('jx').execWithSpinner();
 
