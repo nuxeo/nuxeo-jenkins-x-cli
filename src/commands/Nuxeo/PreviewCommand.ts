@@ -38,18 +38,13 @@ export class PreviewCommand implements CommandModule {
         type: 'string',
         required: true
       },
-      namespace: {
-        describe: 'Namespace',
-        type: 'string',
-        required: true
-      },
       'preview-dir': {
         describe: 'The working preview directory',
         require: false,
         default: 'charts/preview'
       }
     });
-    args.example('njx nuxeo preset -n mongodb preview --app name --namespace namespace', 'Run a preview with mongodb env');
+    args.example('njx nuxeo preset --name mongodb --namespace namespace preview --app name', 'Run a preview with mongodb env');
 
     return args;
   }
