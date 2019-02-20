@@ -50,7 +50,7 @@ export class PresetCommand implements CommandModule {
     if (!fs.existsSync(filename)) {
       log(`File ${filename} is unknown.`);
 
-      throw new Error(`File ${filename}.yml doesn't exist.`);
+      throw new Error(`File ${filename} doesn't exist.`);
     }
 
     return yaml.load(Mustache.render(fs.readFileSync(filename, 'utf-8'), ctx));
