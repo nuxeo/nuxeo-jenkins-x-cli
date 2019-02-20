@@ -12,7 +12,7 @@
     "start": "ts-node src/index.ts",
     "debug": "DEBUG=* ts-node src/index.ts",
     "prepare": "tsc -p .",
-    "postprepare": "cpr src/presets lib/presets",
+    "postprepare": "cpr src/presets lib/presets --overwrite",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "lint": "tslint -c tslint.json --project .",
     "tsc": "tsc"
