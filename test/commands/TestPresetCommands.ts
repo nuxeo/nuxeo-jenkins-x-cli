@@ -36,5 +36,13 @@ describe('Preset Command', () => {
     });
 
     expect(preset.nuxeo.vcs.properties.server).eq('mongodb://mongodb.nuxeal.svc.cluster.local');
-  })
+  });
+
+  it('truncate namespace if length is more than 64 chars', () => {
+    expect(cmd['truncate']('test-namespace')).eq('test-namespace');
+    expect(cmd['truncate']('test-a-really-really-really-long-namespace-with-more-than-64-characters-mongodb'))
+      .eq('test-a-really-really-really-long-more-than-64-characters-mongodb');
+    expect(cmd['truncate']('test-a-really-really-really-long-namespace-with-more-than-64-characters-postgresql'))
+      .eq('test-a-really-really-really-long-e-than-64-characters-postgresql');
+  });
 });

@@ -33,6 +33,9 @@ export class InstallCommand implements CommandModule {
       psp.arg(`-p.${elt}="${preset.nuxeo.vcs.properties[elt]}"`);
     });
 
+    // Add the last arg for the VCS command which is the path for the vcs file to be created
+    psp.arg(`${process.env.HOME}/nuxeo-test-vcs-${args.name}.properties`);
+
     return psp.execWithSpinner().then(async () => {
       return ProcessSpawner.createSub(args)
         .arg('helm')
@@ -42,7 +45,11 @@ export class InstallCommand implements CommandModule {
         .arg(preset.helm.chart)
         .execWithSpinner();
     }).then(async () => {
-      return preset.nuxeo.templates.join(',');
+      const templates: string = preset.nuxeo.templates.join(',');
+      // Write on the stdout stream the filtered list
+      process.stdout.write(`${templates}`);
+
+      return templates;
     });
   }
 }

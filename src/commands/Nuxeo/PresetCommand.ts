@@ -1,3 +1,4 @@
+import cliTruncate from 'cli-truncate';
 import debug from 'debug';
 import fs from 'fs';
 import yaml from 'js-yaml';
@@ -27,13 +28,9 @@ export class PresetCommand implements CommandModule {
       name: {
         describe: 'Preset\'s name.',
         required: true
-      },
-      namespace: {
-        alias: ['n'],
-        describe: 'Kubernetes target namespace',
-        require: true
       }
     });
+    args.middleware(this.defineNamespace);
     args.middleware(this.addPresetConfiguration);
     args.demandCommand();
 
@@ -54,6 +51,28 @@ export class PresetCommand implements CommandModule {
     }
 
     return yaml.load(Mustache.render(fs.readFileSync(filename, 'utf-8'), ctx));
+  }
+
+  protected defineNamespace: MiddlewareFunction = (args: Arguments): void => {
+    const namespace: string = this.truncate(`${process.env.NAMESPACE}-${args.name}`);
+    // Add it to the args
+    args.namespace = namespace;
+    // Define the env variable `NAMESPACE` with the generated namespace value
+    process.env.NAMESPACE = namespace;
+
+    return;
+  }
+
+  protected truncate(label: string): string {
+    if (label.length <= 64) {
+      return label;
+    }
+    // Truncate the label in the middle
+    let truncatedLabel: string = cliTruncate(label, 64, { position: 'middle' });
+    truncatedLabel = truncatedLabel.replace('…', '-');
+    log(`Truncated label: ${truncatedLabel}`);
+
+    return truncatedLabel;
   }
 
   protected addPresetConfiguration: MiddlewareFunction = (args: Arguments): void => {

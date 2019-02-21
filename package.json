@@ -62,13 +62,15 @@
     "@types/mustache": "^0.8.32",
     "@types/ora": "^3.0.0",
     "@types/tmp": "0.0.33",
+    "@types/cli-truncate": "1.1.0",
     "async": "^2.6.1",
     "debug": "^4.1.1",
     "js-yaml": "^3.12.1",
     "mustache": "^3.0.1",
     "ora": "^3.0.0",
     "tmp": "0.0.33",
-    "yargs": "^13.1.0"
+    "yargs": "^13.1.0",
+    "cli-truncate": "1.1.0"
   },
   "husky": {
     "hooks": {
