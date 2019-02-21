@@ -27,7 +27,7 @@ export class PreviewCommand implements CommandModule {
       'log-level': {
         describe: 'Log level (ex: debug)',
         type: 'string',
-        default: 'info'
+        default: 'debug'
       },
       app: {
         describe: 'App name',
