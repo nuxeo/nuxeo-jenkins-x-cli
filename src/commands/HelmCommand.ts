@@ -46,7 +46,7 @@ export class HelmCommand implements CommandModule {
         .arg('repo')
         .arg('add')
         .arg('jenkins-x')
-        .arg(args['repo-host'])
+        .arg(args.repoHost)
         .execWithSpinner();
     } else {
       this.log(`Helm home initialized in: ${helmHome}`);

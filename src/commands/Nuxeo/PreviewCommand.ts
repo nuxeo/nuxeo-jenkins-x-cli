@@ -22,16 +22,12 @@ export class PreviewCommand implements CommandModule {
     args.option({
       'no-comment': {
         describe: 'Skip the comment on PR',
-        type: 'boolean',
-        default: false,
+        type: 'boolean'
       },
       'log-level': {
         describe: 'Log level (ex: debug)',
-        type: 'string'
-      },
-      'pull-secrets': {
-        describe: 'Secrets to pull (ex: instance_clid)',
-        type: 'string'
+        type: 'string',
+        default: 'info'
       },
       app: {
         describe: 'App name',
@@ -49,18 +45,18 @@ export class PreviewCommand implements CommandModule {
     return args;
   }
 
-  public handler = async (args: Arguments): Promise<void> => {
+  public handler = async (args: Arguments): Promise<string> => {
     log(args);
 
     if (args.dryRun === true) {
       log('Running Make Preview(s)');
       log('Running jx preview');
 
-      return;
+      return Promise.resolve('');
     }
 
     if (process.platform !== DARWIN && process.platform !== LINUX) {
-      throw new Error('This OS is not supported. Only Darwin and Linux.');
+      return Promise.reject('This OS is not supported. Only Darwin and Linux.');
     }
 
     const valuesFile: string = `${args.previewDir}/values.yaml`;
@@ -68,13 +64,9 @@ export class PreviewCommand implements CommandModule {
     /* tslint:disable:non-literal-fs-path */
     if (!fs.existsSync(valuesFile)) {
       return Promise.reject(`File ${valuesFile} is unknown.`);
-
-      return;
     }
     if (!fs.existsSync(chartFile)) {
       return Promise.reject(`File ${chartFile} is unknown.`);
-
-      return;
     }
 
     switch (args.name) {
@@ -94,8 +86,6 @@ export class PreviewCommand implements CommandModule {
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
 
-    await ProcessSpawner.create('jx').execWithSpinner();
-
     await ProcessSpawner.create('jx')
       .arg('preview')
       .arg('--app')
@@ -104,15 +94,11 @@ export class PreviewCommand implements CommandModule {
       .arg(args.namespace)
       .arg('--log-level')
       .arg(args.logLevel)
-      .arg('--pull-secrets')
-      .arg(args.pullSecrets)
-      .arg('--dir')
-      .arg('../..')
       .arg('--no-comment')
       .arg(args.noComment)
       .execWithSpinner();
 
-    return Promise.resolve();
+    return ProcessSpawner.create('jx').arg('step').arg('helm').arg('build').execWithSpinner();
   }
 
   private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
