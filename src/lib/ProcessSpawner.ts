@@ -83,8 +83,10 @@ export class ProcessSpawner {
     return this;
   }
 
-  public chCwd(cwd: string): ProcessSpawner {
-    this._cwd = cwd;
+  public chCwd(cwd: string | unknown): ProcessSpawner {
+    if (typeof cwd === 'string') {
+      this._cwd = cwd;
+    }
 
     return this;
   }

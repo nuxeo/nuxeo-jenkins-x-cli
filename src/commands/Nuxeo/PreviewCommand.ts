@@ -87,6 +87,7 @@ export class PreviewCommand implements CommandModule {
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
 
     await ProcessSpawner.create('jx')
+      .chCwd(args.previewDir)
       .arg('preview')
       .arg('--app')
       .arg(args.app)
@@ -98,7 +99,7 @@ export class PreviewCommand implements CommandModule {
       .arg(args.noComment)
       .execWithSpinner();
 
-    return ProcessSpawner.create('jx').arg('step').arg('helm').arg('build').execWithSpinner();
+    return ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
   }
 
   private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
