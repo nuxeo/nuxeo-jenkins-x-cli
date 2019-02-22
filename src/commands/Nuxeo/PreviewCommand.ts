@@ -39,6 +39,11 @@ export class PreviewCommand implements CommandModule {
         describe: 'The working preview directory',
         require: false,
         default: 'charts/preview'
+      },
+      'repo-host': {
+        alias: ['h'],
+        describe: 'Chart Museum Repository to use',
+        default: 'http://jenkins-x-chartmuseum:8080',
       }
     });
     args.example('njx nuxeo preset --name mongodb --namespace namespace preview --app name', 'Run a preview with mongodb env');
