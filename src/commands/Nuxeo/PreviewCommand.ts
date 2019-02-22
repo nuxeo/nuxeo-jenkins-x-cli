@@ -128,7 +128,7 @@ export class PreviewCommand implements CommandModule {
     // Processing dependency requirements (from requirements.yaml)
     await ProcessSpawner.create('helm')
       .arg('repo')
-      .arg('addd')
+      .arg('add')
       .arg('official')
       .arg('https://chartmuseum.build.cd.jenkins-x.io')
       .execWithSpinner();
