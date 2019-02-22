@@ -133,6 +133,7 @@ export class PreviewCommand implements CommandModule {
       .arg('https://chartmuseum.build.cd.jenkins-x.io')
       .execWithSpinner();
     await ProcessSpawner.create('helm')
+      .chCwd(args.previewDir)
       .arg('dependency')
       .arg('update')
       .execWithSpinner();
