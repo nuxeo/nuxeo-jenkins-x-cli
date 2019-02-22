@@ -142,16 +142,17 @@ export class PreviewCommand implements CommandModule {
   }
 
   private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
+    log(`Replace content '${occurence}' in ${file} by ${replacement}`);
     /* tslint:disable:non-literal-fs-path */
     fs.readFile(file, 'utf8', (err: Error, data: string) => {
-      if (err !== undefined) {
+      if (err !== undefined && err !== null) {
         throw err;
       }
       const regexp: RegExp = new RegExp(`${occurence}.*`, 'g');
       const result: string = data.replace(regexp, replacement);
       /* tslint:disable:non-literal-fs-path */
       fs.writeFile(file, result, 'utf8', (error: Error) => {
-        if (error !== undefined) {
+        if (error !== undefined && error !== null) {
           throw error;
         }
       });
