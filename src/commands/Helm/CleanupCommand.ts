@@ -20,6 +20,7 @@ export class CleanupCommand implements CommandModule {
   };
 
   public handler = async (args: Arguments): Promise<void> => {
+    log(`Cleanup release ${args.name}`);
     await ProcessSpawner.create('helm')
       .arg('delete')
       .arg(args.name)

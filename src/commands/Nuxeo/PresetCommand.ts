@@ -54,7 +54,7 @@ export class PresetCommand implements CommandModule {
   }
 
   protected defineNamespace: MiddlewareFunction = (args: Arguments): void => {
-    const namespace: string = this.truncate(`${process.env.NAMESPACE}-${args.name}`);
+    const namespace: string = this.transform(`${process.env.NAMESPACE}-${args.name}`);
     // Add it to the args
     args.namespace = namespace;
     // Define the env variable `NAMESPACE` with the generated namespace value
@@ -63,12 +63,19 @@ export class PresetCommand implements CommandModule {
     return;
   }
 
-  protected truncate(label: string): string {
-    if (label.length <= 64) {
-      return label;
+  /**
+   * Transform the given label to make sure the length is 64 characters max and that it contains only lower case characters
+   *
+   * @param label The label to transform.
+   */
+  protected transform(label: string): string {
+    // Convert it to lower case letters only
+    const labelLowerCase: string = label.toLowerCase();
+    if (labelLowerCase.length <= 64) {
+      return labelLowerCase;
     }
     // Truncate the label in the middle
-    let truncatedLabel: string = cliTruncate(label, 64, { position: 'middle' });
+    let truncatedLabel: string = cliTruncate(labelLowerCase, 64, { position: 'middle' });
     truncatedLabel = truncatedLabel.replace('…', '-');
     log(`Truncated label: ${truncatedLabel}`);
 
