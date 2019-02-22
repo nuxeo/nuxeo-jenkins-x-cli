@@ -1,6 +1,6 @@
 import debug from 'debug';
 import fs from 'fs';
-import { Arguments, Argv, CommandModule } from 'yargs';
+import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
 
 const log: debug.IDebugger = debug('command:nuxeo:preview');
@@ -19,6 +19,7 @@ export class PreviewCommand implements CommandModule {
   public describe: string = 'Run a preview based on presets';
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
+    args.middleware(this.helmInit);
     args.option({
       'no-comment': {
         describe: 'Skip the comment on PR',
@@ -100,6 +101,38 @@ export class PreviewCommand implements CommandModule {
       .execWithSpinner();
 
     return ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
+  }
+
+  public helmInit: MiddlewareFunction = async (args: Arguments): Promise<void> => {
+    log(args);
+    const helmHome: string = await ProcessSpawner.create('helm').arg('home').execWithSpinner();
+    /* tslint:disable:non-literal-fs-path */
+    if (!fs.existsSync(helmHome)) {
+      log(`Helm home is not initialized in: ${helmHome}`);
+      await ProcessSpawner.create('helm').arg('init').arg('--client-only').execWithSpinner();
+      await ProcessSpawner.create('helm')
+        .arg('repo')
+        .arg('add')
+        .arg('jenkins-x')
+        .arg(args.repoHost)
+        .execWithSpinner();
+    } else {
+      log(`Helm home initialized in: ${helmHome}`);
+    }
+
+    // Processing dependency requirements (from requirements.yaml)
+    await ProcessSpawner.create('helm')
+      .arg('repo')
+      .arg('addd')
+      .arg('official')
+      .arg('https://chartmuseum.build.cd.jenkins-x.io')
+      .execWithSpinner();
+    await ProcessSpawner.create('helm')
+      .arg('dependency')
+      .arg('update')
+      .execWithSpinner();
+
+    return Promise.resolve();
   }
 
   private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
