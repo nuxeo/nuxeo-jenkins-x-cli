@@ -92,7 +92,9 @@ export class PreviewCommand implements CommandModule {
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
 
-    await ProcessSpawner.create('jx')
+    await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
+
+    return ProcessSpawner.create('jx')
       .chCwd(args.previewDir)
       .arg('preview')
       .arg('--name')
@@ -104,8 +106,6 @@ export class PreviewCommand implements CommandModule {
       .arg('--no-comment')
       .arg(args.noComment)
       .execWithSpinner();
-
-    return ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
   }
 
   public helmInit: MiddlewareFunction = async (args: Arguments): Promise<void> => {
@@ -118,7 +118,7 @@ export class PreviewCommand implements CommandModule {
       await ProcessSpawner.create('helm')
         .arg('repo')
         .arg('add')
-        .arg('jenkins-x')
+        .arg('local-jenkins-x')
         .arg(args.repoHost)
         .execWithSpinner();
     } else {

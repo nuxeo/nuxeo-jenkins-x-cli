@@ -45,7 +45,7 @@ export class HelmCommand implements CommandModule {
       await ProcessSpawner.create('helm')
         .arg('repo')
         .arg('add')
-        .arg('jenkins-x')
+        .arg('local-jenkins-x')
         .arg(args.repoHost)
         .execWithSpinner();
     } else {
