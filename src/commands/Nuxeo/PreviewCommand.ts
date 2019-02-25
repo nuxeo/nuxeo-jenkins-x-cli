@@ -146,14 +146,14 @@ export class PreviewCommand implements CommandModule {
     /* tslint:disable:non-literal-fs-path */
     fs.readFile(file, 'utf8', (err: Error, data: string) => {
       if (err !== undefined && err !== null) {
-        throw err;
+        return Promise.reject(`Reading ${file} failed - ${err}`);
       }
       const regexp: RegExp = new RegExp(`${occurence}.*`, 'g');
       const result: string = data.replace(regexp, replacement);
       /* tslint:disable:non-literal-fs-path */
       fs.writeFile(file, result, 'utf8', (error: Error) => {
         if (error !== undefined && error !== null) {
-          throw error;
+          return Promise.reject(`Replacing content in ${file} failed - ${error}`);
         }
       });
     });
