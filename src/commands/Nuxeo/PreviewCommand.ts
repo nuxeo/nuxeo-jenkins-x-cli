@@ -95,7 +95,7 @@ export class PreviewCommand implements CommandModule {
     await ProcessSpawner.create('jx')
       .chCwd(args.previewDir)
       .arg('preview')
-      .arg('--app')
+      .arg('--name')
       .arg(args.app)
       .arg('--namespace')
       .arg(args.namespace)
