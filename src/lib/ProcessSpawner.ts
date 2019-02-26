@@ -12,6 +12,8 @@ export class ProcessSpawner {
 
   protected _args: string[] = [];
 
+  protected _envs: { [varName: string]: string } = {};
+
   protected _cwd: string = '';
 
   protected _dryRun: boolean = false;
@@ -61,8 +63,24 @@ export class ProcessSpawner {
     return this;
   }
 
+  public env(key: string, val: string | unknown): ProcessSpawner {
+    if (typeof val === 'string') {
+      this._envs[key] = val;
+    } else {
+      this._log(`Unknown value type: ${val}`);
+    }
+
+    return this;
+  }
+
   get args(): string {
     return this._args.join(' ');
+  }
+
+  get envs(): string {
+    return Object.keys(this._envs).map((key: string) => {
+      return `${key}=${this._envs[key]}`;
+    }).join(';');
   }
 
   get process(): string {
@@ -113,6 +131,7 @@ export class ProcessSpawner {
     const proc: ChildProcess = spawn(this._process, this._args, {
       cwd: this._cwd,
       stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, ...this._envs },
     });
 
     // Run cmd in dry run, with a fake timeour of 100ms

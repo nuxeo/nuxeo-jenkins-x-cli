@@ -54,7 +54,7 @@ export class PreviewCommand implements CommandModule {
         required: true
       }
     });
-    args.example('njx preview --preset mongodb --namespace namespace --app appname', 'Run a preview with mongodb env');
+    args.example('$0 preview --preset mongodb --namespace namespace --app appname', 'Run a preview with mongodb env');
 
     return args;
   }
