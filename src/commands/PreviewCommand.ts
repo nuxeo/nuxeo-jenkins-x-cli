@@ -99,7 +99,7 @@ export class PreviewCommand implements CommandModule {
       'repository:', valuesFile);
     this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
 
-    // await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
+    await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
     const appname: string = args.appname !== undefined ? <string>args.appname : `${process.env.APP_NAME}`;
     const namespace: string = args.namespace !== undefined ? <string>args.namespace :
