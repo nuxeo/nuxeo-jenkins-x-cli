@@ -1,4 +1,5 @@
 import { Arguments, Argv, CommandModule } from 'yargs';
+import { BuildCommand } from './Nuxeo/BuildCommand';
 import { PresetCommand } from './Nuxeo/PresetCommand';
 import { VCSCommand } from './Nuxeo/VCSCommand';
 
@@ -14,6 +15,7 @@ export class NuxeoCommand implements CommandModule {
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.command(new VCSCommand());
     args.command(new PresetCommand());
+    args.command(new BuildCommand());
     args.demandCommand();
 
     return args;
