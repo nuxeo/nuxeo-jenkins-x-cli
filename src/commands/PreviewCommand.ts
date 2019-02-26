@@ -95,16 +95,15 @@ export class PreviewCommand implements CommandModule {
     }
 
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
-    this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
-    this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}/${process.env.ORG}/${process.env.APP_NAME}`,
+    this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${process.env.ORG}\/${process.env.APP_NAME}`,
       'repository:', valuesFile);
     this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
 
-    await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
+    // await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
     const appname: string = args.appname !== undefined ? <string>args.appname : `${process.env.APP_NAME}`;
     const namespace: string = args.namespace !== undefined ? <string>args.namespace :
-      `${args.preset}-${process.env.BRANCH_NAME}-preview-${appname}`.substring(0, 63);
+      `${args.preset}-${process.env.BRANCH_NAME}-${appname}`.substring(0, 63);
 
     log(`Preview namespace: ${namespace}`);
 
@@ -148,18 +147,10 @@ export class PreviewCommand implements CommandModule {
   private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
     log(`Replace content '${occurence}' in ${file} by ${replacement}`);
     /* tslint:disable:non-literal-fs-path */
-    fs.readFile(file, 'utf8', (err: Error, data: string) => {
-      if (err !== undefined && err !== null) {
-        return Promise.reject(`Reading ${file} failed - ${err}`);
-      }
-      const regexp: RegExp = new RegExp(`${occurence}.*`, 'g');
-      const result: string = data.replace(regexp, replacement);
-      /* tslint:disable:non-literal-fs-path */
-      fs.writeFile(file, result, 'utf8', (error: Error) => {
-        if (error !== undefined && error !== null) {
-          return Promise.reject(`Replacing content in ${file} failed - ${error}`);
-        }
-      });
-    });
+    const content: string = fs.readFileSync(file, 'utf8');
+    const regexp: RegExp = new RegExp(`${occurence}.*`, 'g');
+    const result: string = content.replace(regexp, replacement);
+    /* tslint:disable:non-literal-fs-path */
+    fs.writeFileSync(file, result);
   }
 }
