@@ -6,8 +6,6 @@ import { ProcessSpawner } from '../../lib/ProcessSpawner';
 const log: debug.IDebugger = debug('command:nuxeo:preview');
 const LINUX: string = 'linux';
 const DARWIN: string = 'darwin';
-const MONGODB: string = 'mongodb';
-const POSTGRESQL: string = 'postgresql';
 
 /**
  * Nuxeo Preview Command
@@ -16,24 +14,27 @@ export class PreviewCommand implements CommandModule {
 
   public command: string = 'preview';
 
-  public describe: string = 'Run a preview based on presets';
+  public describe: string = 'Run a preview based on preset';
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.middleware(this.helmInit);
     args.option({
-      'no-comment': {
+      noComment: {
         describe: 'Skip the comment on PR',
-        type: 'boolean'
+        type: 'boolean',
+        default: false,
+        required: false
       },
       'log-level': {
         describe: 'Log level (ex: debug)',
         type: 'string',
-        default: 'debug'
+        default: 'debug',
+        required: false
       },
-      app: {
-        describe: 'App name',
-        type: 'string',
-        required: true
+      appname: {
+        describe: 'App name (optional - taken from Env by default)',
+        required: false,
+        type: 'string'
       },
       'preview-dir': {
         describe: 'The working preview directory',
@@ -44,14 +45,19 @@ export class PreviewCommand implements CommandModule {
         alias: ['h'],
         describe: 'Chart Museum Repository to use',
         default: 'http://jenkins-x-chartmuseum:8080',
+        type: 'string',
+        required: false
       },
       preset: {
         describe: 'Preset name.',
-        required: false
+        required: false,
+        type: 'string',
+        default: 'h2'
       },
       namespace: {
-        describe: 'Namespace',
-        required: true
+        describe: 'Namespace (optional - computed by default)',
+        required: false,
+        type: 'string'
       }
     });
     args.example('$0 preview --preset mongodb --namespace namespace --app appname', 'Run a preview with mongodb env');
@@ -83,18 +89,8 @@ export class PreviewCommand implements CommandModule {
       return Promise.reject(`File ${chartFile} is unknown.`);
     }
 
-    switch (args.preset) {
-      case MONGODB: {
-        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${MONGODB}:\n  deploy: false`);
-        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${POSTGRESQL}:\n  deploy: true`);
-        break;
-      }
-      case POSTGRESQL: {
-        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${MONGODB}:\n  deploy: true`);
-        fs.appendFileSync(valuesFile, `\nnuxeo:\n ${POSTGRESQL}:\n  deploy: false`);
-        break;
-      }
-      default:
+    if (args.preset !== 'h2') {
+      fs.appendFileSync(valuesFile, `\nnuxeo:\n ${args.preset}:\n  deploy: true`);
     }
 
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
@@ -105,22 +101,31 @@ export class PreviewCommand implements CommandModule {
 
     await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
-    return ProcessSpawner.create('jx')
+    const appname: string = args.appname !== undefined ? <string>args.appname : `${process.env.APP_NAME}`;
+    const namespace: string = args.namespace !== undefined ? <string>args.namespace :
+      `${args.preset}-${process.env.BRANCH_NAME}-preview-${appname}`.substring(0, 63);
+
+    log(`Preview namespace: ${namespace}`);
+
+    const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
       .chCwd(args.previewDir)
       .arg('preview')
       .arg('--name')
-      .arg(args.app)
+      .arg(appname)
       .arg('--namespace')
-      .arg(args.namespace)
+      .arg(namespace)
       .arg('--log-level')
-      .arg(args.logLevel)
-      .arg('--no-comment')
-      .arg(args.noComment)
-      .execWithSpinner();
+      .arg(args.logLevel);
+
+    if (<boolean>args.noComment) {
+      previewProcess.arg('--no-comment');
+    }
+
+    return previewProcess.execWithSpinner();
   }
 
   public helmInit: MiddlewareFunction = async (args: Arguments): Promise<void> => {
-    log(args);
+
     const helmHome: string = await ProcessSpawner.create('helm').arg('home').execWithSpinner();
     /* tslint:disable:non-literal-fs-path */
     if (!fs.existsSync(helmHome)) {
