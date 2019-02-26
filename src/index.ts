@@ -2,6 +2,7 @@ import yargs from 'yargs';
 
 import { CleanupCommand } from './commands/CleanupCommand';
 import { HelmCommand } from './commands/HelmCommand';
+import { PreviewCommand } from './commands/Nuxeo/PreviewCommand';
 import { NuxeoCommand } from './commands/NuxeoCommand';
 import { PRCommand } from './commands/PRCommand';
 
@@ -10,6 +11,7 @@ yargs
   .command(new HelmCommand())
   .command(new NuxeoCommand())
   .command(new PRCommand())
+  .command(new PreviewCommand())
   .option({
     'dry-run': {
       describe: 'Do not change anything in the system',

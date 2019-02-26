@@ -44,9 +44,17 @@ export class PreviewCommand implements CommandModule {
         alias: ['h'],
         describe: 'Chart Museum Repository to use',
         default: 'http://jenkins-x-chartmuseum:8080',
+      },
+      preset: {
+        describe: 'Preset name.',
+        required: false
+      },
+      namespace: {
+        describe: 'Namespace',
+        required: true
       }
     });
-    args.example('njx nuxeo preset --name mongodb --namespace namespace preview --app name', 'Run a preview with mongodb env');
+    args.example('njx preview --presets mongodb --namespace namespace --app appname', 'Run a preview with mongodb env');
 
     return args;
   }
@@ -75,7 +83,7 @@ export class PreviewCommand implements CommandModule {
       return Promise.reject(`File ${chartFile} is unknown.`);
     }
 
-    switch (args.name) {
+    switch (args.preset) {
       case MONGODB: {
         fs.appendFileSync(valuesFile, `\nnuxeo:\n ${MONGODB}:\n  deploy: false`);
         fs.appendFileSync(valuesFile, `\nnuxeo:\n ${POSTGRESQL}:\n  deploy: true`);
@@ -91,6 +99,9 @@ export class PreviewCommand implements CommandModule {
 
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', valuesFile);
+    this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}/${process.env.ORG}/${process.env.APP_NAME}`,
+      'repository:', valuesFile);
+    this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
 
     await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
@@ -124,19 +135,6 @@ export class PreviewCommand implements CommandModule {
     } else {
       log(`Helm home initialized in: ${helmHome}`);
     }
-
-    // Processing dependency requirements (from requirements.yaml)
-    await ProcessSpawner.create('helm')
-      .arg('repo')
-      .arg('add')
-      .arg('official')
-      .arg('https://chartmuseum.build.cd.jenkins-x.io')
-      .execWithSpinner();
-    await ProcessSpawner.create('helm')
-      .chCwd(args.previewDir)
-      .arg('dependency')
-      .arg('update')
-      .execWithSpinner();
 
     return Promise.resolve();
   }
