@@ -22,34 +22,40 @@ export class InstallCommand implements CommandModule {
     const preset: any = nxArgs.yml;
 
     log(preset);
-    // Initialize customdb vcs configuration
-    const psp: ProcessSpawner = ProcessSpawner.createSub(args).arg('nuxeo').arg('vcs');
-    if (preset.nuxeo.vcs.core !== undefined) {
-      psp.arg('--core').arg(preset.nuxeo.vcs.core);
+
+    // Initialize VCS properties for customdb
+    if (preset.nuxeo.vcs !== undefined) {
+      const psp: ProcessSpawner = ProcessSpawner.createSub(args).arg('nuxeo').arg('vcs');
+      if (preset.nuxeo.vcs.core !== undefined) {
+        psp.arg('--core').arg(preset.nuxeo.vcs.core);
+      }
+
+      psp.arg('-b').arg(preset.nuxeo.vcs.base);
+      Object.keys(preset.nuxeo.vcs.properties).forEach((elt: string) => {
+        psp.arg(`-p.${elt}="${preset.nuxeo.vcs.properties[elt]}"`);
+      });
+
+      // Add the last arg for the VCS command which is the path for the vcs file to be created
+      psp.arg(`${process.env.HOME}/nuxeo-test-vcs-${args.name}.properties`);
+
+      await psp.execWithSpinner();
     }
 
-    psp.arg('-b').arg(preset.nuxeo.vcs.base);
-    Object.keys(preset.nuxeo.vcs.properties).forEach((elt: string) => {
-      psp.arg(`-p.${elt}="${preset.nuxeo.vcs.properties[elt]}"`);
-    });
-
-    // Add the last arg for the VCS command which is the path for the vcs file to be created
-    psp.arg(`${process.env.HOME}/nuxeo-test-vcs-${args.name}.properties`);
-
-    return psp.execWithSpinner().then(async () => {
-      return ProcessSpawner.createSub(args)
+    // Install defined Helm chart template
+    if (preset.helm.chart !== undefined) {
+      await ProcessSpawner.createSub(args)
         .arg('helm')
         .arg('install')
         .arg('--name').arg(args.namespace)
         .arg('--namespace').arg(args.namespace)
         .arg(preset.helm.chart)
         .execWithSpinner();
-    }).then(async () => {
-      const templates: string = preset.nuxeo.templates.join(',');
-      // Write on the stdout stream the filtered list
-      process.stdout.write(`${templates}`);
+    }
 
-      return templates;
-    });
+    const templates: string = preset.nuxeo.templates.join(',');
+    // Write on the stdout stream the filtered list
+    process.stdout.write(templates);
+
+    return Promise.resolve(templates);
   }
 }

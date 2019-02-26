@@ -91,7 +91,7 @@ export class PresetCommand implements CommandModule {
 
     const filename: string = path.resolve(path.dirname(require.main.filename), 'presets', `${args.name}.yml`);
     // tslint:disable-next-line:no-any
-    const yml: any = this.readYaml(filename, process.env);
+    const yml: any = { nuxeo: {}, helm: {}, ...this.readYaml(filename, process.env) };
     log(yml);
     args._nx = { yml, ...args._nx };
 

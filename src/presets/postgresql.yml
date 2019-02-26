@@ -4,6 +4,7 @@ nuxeo:
   templates:
     - customdb
     - postgresql
+    - qa
   vcs:
     base: nuxeo.test.vcs
     properties:

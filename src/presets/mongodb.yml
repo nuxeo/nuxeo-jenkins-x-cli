@@ -4,6 +4,7 @@ nuxeo:
   templates:
     - customdb
     - mongodb
+    - qa
   vcs:
     core: mongo
     base: nuxeo.test.mongodb
