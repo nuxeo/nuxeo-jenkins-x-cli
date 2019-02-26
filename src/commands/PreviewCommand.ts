@@ -1,11 +1,9 @@
 import debug from 'debug';
 import fs from 'fs';
-import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
+import yargs, { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
 
-const log: debug.IDebugger = debug('command:nuxeo:preview');
-const LINUX: string = 'linux';
-const DARWIN: string = 'darwin';
+const log: debug.IDebugger = debug('command:preview');
 
 /**
  * Nuxeo Preview Command
@@ -62,17 +60,6 @@ export class PreviewCommand implements CommandModule {
 
   public handler = async (args: Arguments): Promise<string> => {
     log(args);
-
-    if (args.dryRun === true) {
-      log('Running Make Preview(s)');
-      log('Running jx preview');
-
-      return Promise.resolve('');
-    }
-
-    if (process.platform !== DARWIN && process.platform !== LINUX) {
-      return Promise.reject('This OS is not supported. Only Darwin and Linux.');
-    }
 
     const valuesFile: string = `${args.previewDir}/values.yaml`;
     /* tslint:disable:non-literal-fs-path */
@@ -140,6 +127,13 @@ export class PreviewCommand implements CommandModule {
     const content: string = fs.readFileSync(file, 'utf8');
     const regexp: RegExp = new RegExp(`${occurence}.*`, 'g');
     const result: string = content.replace(regexp, replacement);
+
+    if (yargs.argv.dryRun === true) {
+      log('Result content: %O', result);
+
+      return;
+    }
+
     /* tslint:disable:non-literal-fs-path */
     fs.writeFileSync(file, result);
   }
