@@ -25,7 +25,7 @@ describe('Preset Command', () => {
 
   it('parse correctly random yaml file', () => {
     const preset: any = cmd['readYaml'](findPresetPath('mongodb'));
-    expect(preset.helm.chart).eq('jenkins-x/nuxeo-mongodb');
+    expect(preset.helm.chart).eq('local-jenkins-x/nuxeo-mongodb');
     expect(preset.nuxeo.vcs.properties.server).eq('mongodb://..svc.cluster.local');
   });
 

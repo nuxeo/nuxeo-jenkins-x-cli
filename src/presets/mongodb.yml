@@ -1,5 +1,5 @@
 helm:
-  chart: jenkins-x/nuxeo-mongodb
+  chart: local-jenkins-x/nuxeo-mongodb
 nuxeo:
   templates:
     - customdb
