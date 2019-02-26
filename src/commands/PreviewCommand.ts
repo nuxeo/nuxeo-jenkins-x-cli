@@ -48,12 +48,6 @@ export class PreviewCommand implements CommandModule {
         type: 'string',
         required: false
       },
-      preset: {
-        describe: 'Preset name.',
-        required: false,
-        type: 'string',
-        default: 'h2'
-      },
       namespace: {
         describe: 'Namespace (optional - computed by default)',
         required: false,
@@ -81,23 +75,19 @@ export class PreviewCommand implements CommandModule {
     }
 
     const valuesFile: string = `${args.previewDir}/values.yaml`;
-    const chartFile: string = `${args.previewDir}/Chart.yaml`;
     /* tslint:disable:non-literal-fs-path */
     if (!fs.existsSync(valuesFile)) {
       return Promise.reject(`File ${valuesFile} is unknown.`);
     }
+    this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
+
+    const chartFile: string = `${args.previewDir}/Chart.yaml`;
     if (!fs.existsSync(chartFile)) {
       return Promise.reject(`File ${chartFile} is unknown.`);
     }
-
-    if (args.preset !== 'h2') {
-      fs.appendFileSync(valuesFile, `\nnuxeo:\n ${args.preset}:\n  deploy: true`);
-    }
-
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
     this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${process.env.ORG}\/${process.env.APP_NAME}`,
       'repository:', valuesFile);
-    this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
 
     await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 

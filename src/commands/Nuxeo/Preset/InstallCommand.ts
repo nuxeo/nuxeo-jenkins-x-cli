@@ -24,8 +24,8 @@ export class InstallCommand implements CommandModule {
     log(preset);
 
     // Initialize VCS properties for customdb
+    const psp: ProcessSpawner = ProcessSpawner.createSub(args).arg('nuxeo').arg('vcs');
     if (preset.nuxeo.vcs !== undefined) {
-      const psp: ProcessSpawner = ProcessSpawner.createSub(args).arg('nuxeo').arg('vcs');
       if (preset.nuxeo.vcs.core !== undefined) {
         psp.arg('--core').arg(preset.nuxeo.vcs.core);
       }
@@ -34,12 +34,11 @@ export class InstallCommand implements CommandModule {
       Object.keys(preset.nuxeo.vcs.properties).forEach((elt: string) => {
         psp.arg(`-p.${elt}="${preset.nuxeo.vcs.properties[elt]}"`);
       });
-
-      // Add the last arg for the VCS command which is the path for the vcs file to be created
-      psp.arg(`${process.env.HOME}/nuxeo-test-vcs-${args.name}.properties`);
-
-      await psp.execWithSpinner();
     }
+    // Add the last arg for the VCS command which is the path for the vcs file to be created
+    psp.arg(`${process.env.HOME}/nuxeo-test-vcs-${args.name}.properties`);
+
+    await psp.execWithSpinner();
 
     // Install defined Helm chart template
     if (preset.helm.chart !== undefined) {

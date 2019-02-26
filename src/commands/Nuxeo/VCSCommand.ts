@@ -99,6 +99,8 @@ export class VCSCommand implements CommandModule {
 
   // tslint:disable-next-line:no-any
   protected writePropertiesFile(file: any, data: string, force: boolean = false, append: boolean = false): void {
+    log(`Write properties file: ${file}`);
+    log(`With data: %O`, data);
     /* tslint:disable:non-literal-fs-path */
     if (!force && fs.existsSync(file)) {
       throw new Error(`File ${file} already exists. Use --force opts to override the existing file.`);
