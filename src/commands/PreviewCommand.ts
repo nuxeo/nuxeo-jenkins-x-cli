@@ -1,7 +1,7 @@
 import debug from 'debug';
 import fs from 'fs';
 import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
-import { ProcessSpawner } from '../../lib/ProcessSpawner';
+import { ProcessSpawner } from '../lib/ProcessSpawner';
 
 const log: debug.IDebugger = debug('command:nuxeo:preview');
 const LINUX: string = 'linux';
@@ -19,10 +19,10 @@ export class PreviewCommand implements CommandModule {
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.middleware(this.helmInit);
     args.option({
-      noComment: {
+      comment: {
         describe: 'Skip the comment on PR',
         type: 'boolean',
-        default: false,
+        default: true,
         required: false
       },
       'log-level': {
@@ -60,7 +60,8 @@ export class PreviewCommand implements CommandModule {
         type: 'string'
       }
     });
-    args.example('$0 preview --preset mongodb --namespace namespace --app appname', 'Run a preview with mongodb env');
+    args.example('$0 preview --preview-dir addon/charts/preview', 'Run a preview with a given preview directory');
+    args.example('$0 preview --no-comment', 'Run a preview - skipping PR comment');
 
     return args;
   }
@@ -117,7 +118,7 @@ export class PreviewCommand implements CommandModule {
       .arg('--log-level')
       .arg(args.logLevel);
 
-    if (<boolean>args.noComment) {
+    if (args.comment === false) {
       previewProcess.arg('--no-comment');
     }
 
