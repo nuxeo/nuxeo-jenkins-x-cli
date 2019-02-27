@@ -46,6 +46,12 @@ export class PreviewCommand implements CommandModule {
         type: 'string',
         required: false
       },
+      preset: {
+        describe: 'Preset to deploy with Nuxeo',
+        require: false,
+        type: 'string',
+        default: 'default',
+      },
       namespace: {
         describe: 'Namespace (optional - computed by default)',
         required: false,

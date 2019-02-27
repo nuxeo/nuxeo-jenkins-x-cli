@@ -10,7 +10,7 @@ const log: debug.IDebugger = debug('command:nuxeo:build');
 export class BuildCommand implements CommandModule {
   public command: string = 'build';
 
-  public describe: string = 'Build and Publish Docker image. Using Scaffold.';
+  public describe: string = 'Build and Publish Docker image. Using Skaffold.';
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.option({
@@ -41,6 +41,7 @@ export class BuildCommand implements CommandModule {
     log(args);
 
     const skaffold: ProcessSpawner = ProcessSpawner.create('skaffold')
+      .arg('build').arg('-f').arg('skaffold.yaml')
       .env('DOCKER_IMAGE', this.formatDockerImageName(args))
       .env('VERSION', `${args.tag}`);
 
