@@ -17,7 +17,7 @@ export class VCSCommand implements CommandModule {
       properties: {
         alias: ['p'],
         demandOption: true,
-        describe: 'Property\'s value.',
+        describe: 'Property\'s values. Use dots (.) for implicit object path.',
         default: {},
       },
       force: {
@@ -33,7 +33,7 @@ export class VCSCommand implements CommandModule {
         alias: ['b'],
         default: 'nuxeo.test.vcs',
         type: 'string',
-        describe: 'Change properties base. Use dots (.) for implicit object path.'
+        describe: 'Change properties base.'
       },
       append: {
         alias: ['a'],

@@ -72,6 +72,8 @@ export class PreviewCommand implements CommandModule {
     if (!fs.existsSync(valuesFile)) {
       return Promise.reject(`File ${valuesFile} is unknown.`);
     }
+    this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${process.env.ORG}\/${process.env.APP_NAME}`,
+      'repository:', valuesFile);
     this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
 
     const chartFile: string = `${args.previewDir}/Chart.yaml`;
@@ -79,8 +81,6 @@ export class PreviewCommand implements CommandModule {
       return Promise.reject(`File ${chartFile} is unknown.`);
     }
     this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
-    this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${process.env.ORG}\/${process.env.APP_NAME}`,
-      'repository:', valuesFile);
 
     await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
