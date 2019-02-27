@@ -8,7 +8,7 @@ describe('Build Command', () => {
 
   const args = {
     registry: 'toto:5000',
-    version: 'latest',
+    tag: 'latest',
     name: 'foo',
     organization: 'bar',
     $0: '',
@@ -27,7 +27,7 @@ describe('Build Command', () => {
     let res: string = cmd['formatDockerImageFullName'](args);
     expect(res).eq('toto:5000/bar/foo:latest');
 
-    res = cmd['formatDockerImageFullName']({ ...args, organization: undefined, version: '1.0', registry: 'local:5000' });
+    res = cmd['formatDockerImageFullName']({ ...args, organization: undefined, tag: '1.0', registry: 'local:5000' });
     expect(res).eq('local:5000/foo:1.0');
   });
 });

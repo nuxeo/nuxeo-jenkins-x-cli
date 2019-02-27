@@ -14,7 +14,7 @@ export class BuildCommand implements CommandModule {
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.option({
-      version: {
+      tag: {
         describe: 'Docker Image\'s version to build',
         type: 'string',
         required: true
@@ -42,7 +42,7 @@ export class BuildCommand implements CommandModule {
 
     const skaffold: ProcessSpawner = ProcessSpawner.create('skaffold')
       .env('DOCKER_IMAGE', this.formatDockerImageName(args))
-      .env('VERSION', `${args.version}`);
+      .env('VERSION', `${args.tag}`);
 
     if (args.registry !== undefined) {
       skaffold.env('DOCKER_REGISTRY', `${args.registry}`);
@@ -60,7 +60,7 @@ export class BuildCommand implements CommandModule {
   protected formatDockerImageFullName = (args: Arguments): string => {
     const reg: string | unknown = args.registry === undefined ? process.env.DOCKER_REGISTRY : args.registry;
 
-    return `${reg}/${this.formatDockerImageName(args)}:${args.version}`;
+    return `${reg}/${this.formatDockerImageName(args)}:${args.tag}`;
   }
 
   protected formatDockerImageName = (args: Arguments): string => {
