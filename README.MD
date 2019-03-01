@@ -363,9 +363,12 @@ Options:
   --dry-run        Do not change anything in the system
                                                       [boolean] [default: false]
   --help           Show help                                           [boolean]
+  --tag            Docker image's tag to deploy.             [string] [required]
+  --organization   Docker image's organization to deploy.    [string] [required]
+  --build          Preview build version.                    [string] [required]
   --comment        Skip the comment on PR              [boolean] [default: true]
   --log-level      Log level (ex: debug)             [string] [default: "debug"]
-  --appname        App name (optional - taken from Env by default)      [string]
+  --name           Name                                      [string] [required]
   --preview-dir    The working preview directory     [default: "charts/preview"]
   --repo-host, -h  Chart Museum Repository to use
                          [string] [default: "http://jenkins-x-chartmuseum:8080"]
@@ -373,9 +376,12 @@ Options:
   --namespace      Namespace (optional - computed by default)           [string]
 
 Examples:
-  njx preview --preview-dir                 Run a preview with a given preview
-  addon/charts/preview                      directory
-  njx preview --no-comment                  Run a preview - skipping PR comment
+  index.ts preview --preview-dir            Deploy Preview from a given
+  charts/preview                            directory
+  index.ts preview --no-comment             Deploy Preview - without PR comment
+  index.ts preview --namespace              Deploy Preview and override default
+  $APP_NAME}-master --tag latest            namespace and Docker image tag
+                                            versions
 ```
 
 ## Licensing
