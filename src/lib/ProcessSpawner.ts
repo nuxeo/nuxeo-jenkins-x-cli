@@ -2,6 +2,7 @@ import { ChildProcess, spawn } from 'child_process';
 import debug from 'debug';
 import ora, { Options, Ora } from 'ora';
 import { basename } from 'path';
+import { Readable } from 'stream';
 import yargs, { Arguments } from 'yargs';
 
 /**
@@ -145,6 +146,12 @@ export class ProcessSpawner {
 
     return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
       const chunks: Uint8Array[] = [];
+
+      if (!(proc.stdout instanceof Readable && proc.stderr instanceof Readable)) {
+        reject(new Error('Unable to attach stdout/stderr'));
+
+        return;
+      }
 
       proc.stdout.on('data', (data: Buffer) => {
         chunks.push(data);
