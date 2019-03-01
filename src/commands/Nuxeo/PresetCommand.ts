@@ -1,4 +1,3 @@
-import cliTruncate from 'cli-truncate';
 import debug from 'debug';
 import fs from 'fs';
 import yaml from 'js-yaml';
@@ -6,6 +5,7 @@ import Mustache from 'mustache';
 import path from 'path';
 import process from 'process';
 import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
+import { Helper } from '../../lib/Helper';
 import { InstallCommand } from './Preset/InstallCommand';
 import { PurgeCommand } from './Preset/PurgeCommand';
 
@@ -26,6 +26,12 @@ export class PresetCommand implements CommandModule {
       name: {
         describe: 'Preset\'s name.',
         required: true
+      },
+      namespace: {
+        describe: 'Base namespace to deploy',
+        required: true,
+        type: 'string',
+        default: process.env.NAMESPACE,
       }
     });
     args.middleware(this.defineNamespace);
@@ -35,8 +41,9 @@ export class PresetCommand implements CommandModule {
     return args;
   }
 
-  public handler = async (args: Arguments): Promise<void> => {
-    return Promise.resolve();
+  public handler = (args: Arguments): void => {
+    // Nothing to do
+    log(args);
   }
 
   // tslint:disable-next-line:no-any
@@ -52,32 +59,8 @@ export class PresetCommand implements CommandModule {
   }
 
   protected defineNamespace: MiddlewareFunction = (args: Arguments): void => {
-    const namespace: string = this.transform(`${process.env.NAMESPACE}-${args.name}`);
-    // Add it to the args
-    args.namespace = namespace;
-    // Define the env variable `NAMESPACE` with the generated namespace value
-    process.env.NAMESPACE = namespace;
-
-    return;
-  }
-
-  /**
-   * Transform the given label to make sure the length is 64 characters max and that it contains only lower case characters
-   *
-   * @param label The label to transform.
-   */
-  protected transform(label: string): string {
-    // Convert it to lower case letters only
-    const labelLowerCase: string = label.toLowerCase();
-    if (labelLowerCase.length <= 64) {
-      return labelLowerCase;
-    }
-    // Truncate the label in the middle
-    let truncatedLabel: string = cliTruncate(labelLowerCase, 64, { position: 'middle' });
-    truncatedLabel = truncatedLabel.replace('…', '-');
-    log(`Truncated label: ${truncatedLabel}`);
-
-    return truncatedLabel;
+    // XXX Cannot use coerce due to limited access to other opts.
+    args.namespace = Helper.formatNamespace(`${args.namespace}-${args.name}`);
   }
 
   protected addPresetConfiguration: MiddlewareFunction = (args: Arguments): void => {
@@ -94,7 +77,5 @@ export class PresetCommand implements CommandModule {
     const yml: any = { nuxeo: {}, helm: {}, ...this.readYaml(filename, process.env) };
     log(yml);
     args._nx = { yml, ...args._nx };
-
-    return;
   }
 }

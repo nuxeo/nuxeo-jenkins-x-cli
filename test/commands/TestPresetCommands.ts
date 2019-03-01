@@ -39,10 +39,21 @@ describe('Preset Command', () => {
   });
 
   it('transform namespace if length is more than 64 chars', () => {
-    expect(cmd['transform']('test-namespace')).eq('test-namespace');
-    expect(cmd['transform']('test-a-really-really-really-long-namespace-with-more-than-64-characters-mongodb'))
-      .eq('test-a-really-really-really-long-more-than-64-characters-mongodb');
-    expect(cmd['transform']('test-A-really-really-REALLY-long-namespace-with-MoRe-than-64-characters-postgresql'))
-      .eq('test-a-really-really-really-long-e-than-64-characters-postgresql');
+    const args: any = {
+      _: [],
+      $0: ''
+    }
+
+    let tmp: any = { ...args, namespace: 'test-ns', name: 'name' };
+    cmd['defineNamespace'](tmp);
+    expect(tmp).property('namespace', 'test-ns-name');
+
+    tmp = { ...args, namespace: 'test-a-really-really-really-long-namespace-with-more-than-64-characters', name: 'mongodb' };
+    cmd['defineNamespace'](tmp)
+    expect(tmp).property('namespace', 'test-a-really-really-really-long-more-than-64-characters-mongodb');
+
+    tmp = { ...args, namespace: 'test-A-really-really-REALLY-long-namespace-with-MoRe-than-64-characters', name: 'postgres' };
+    cmd['defineNamespace'](tmp)
+    expect(tmp).property('namespace', 'test-a-really-really-really-long-ore-than-64-characters-postgres');
   });
 });
