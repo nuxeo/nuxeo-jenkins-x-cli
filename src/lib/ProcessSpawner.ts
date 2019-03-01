@@ -151,7 +151,7 @@ export class ProcessSpawner {
       });
 
       proc.stderr.on('data', (data: Buffer) => {
-        this._log(String(data).trim());
+        process.stderr.write(data);
       });
 
       proc.on('close', (code: number) => {
