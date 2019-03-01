@@ -111,7 +111,7 @@ export class PreviewCommand implements CommandModule {
       .arg('--name')
       .arg(args.name)
       .arg('--namespace')
-      .arg(namespace.substring(0, 63))
+      .arg(Helper.formatNamespace(namespace))
       .arg('--log-level')
       .arg(args.logLevel);
 

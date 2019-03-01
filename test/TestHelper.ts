@@ -20,4 +20,12 @@ describe('Helper', () => {
     txt = Helper.formatDockerImageFull('nd-reg:5000', 'org', 'image', 'latest');
     expect(txt).equal('nd-reg:5000/org/image:latest');
   });
+
+  it('truncate long namespace by the middle', () => {
+    expect(Helper.formatNamespace('lilalou')).eq('lilalou');
+
+    const toolongNs = (Math.random()*1e128).toString(36);
+    expect(toolongNs.length).not.lessThan(70);
+    expect(Helper.formatNamespace(toolongNs)).lengthOf(64);
+  });
 });

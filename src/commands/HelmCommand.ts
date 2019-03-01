@@ -1,6 +1,7 @@
 import debug from 'debug';
 import { existsSync } from 'fs';
 import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
+import { Helper } from '../lib/Helper';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
 import { CleanupCommand } from './Helm/CleanupCommand';
 import { InstallCommand } from './Helm/InstallCommand';
@@ -29,6 +30,7 @@ export class HelmCommand implements CommandModule {
         alias: ['n'],
         describe: 'Target Kubernetes namespace.',
         required: true,
+        coerce: Helper.formatNamespace,
       },
     });
     args.demandCommand();

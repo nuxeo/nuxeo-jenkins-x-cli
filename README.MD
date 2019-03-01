@@ -293,10 +293,11 @@ njx nuxeo preset install
 Install and Configure a preset
 
 Options:
-  --version  Show version number                                       [boolean]
-  --dry-run  Do not change anything in the system     [boolean] [default: false]
-  --help     Show help                                                 [boolean]
-  --name     Preset's name.                                           [required]
+  --version    Show version number                                     [boolean]
+  --dry-run    Do not change anything in the system   [boolean] [default: false]
+  --help       Show help                                               [boolean]
+  --name       Preset's name.                                         [required]
+  --namespace  Base namespace to deploy                      [string] [required]
 ```
 
 ##### Nuxeo Preset Purge
@@ -311,10 +312,11 @@ njx nuxeo preset purge
 purge a preset
 
 Options:
-  --version  Show version number                                       [boolean]
-  --dry-run  Do not change anything in the system     [boolean] [default: false]
-  --help     Show help                                                 [boolean]
-  --name     Preset's name.                                           [required]
+  --version    Show version number                                     [boolean]
+  --dry-run    Do not change anything in the system   [boolean] [default: false]
+  --help       Show help                                               [boolean]
+  --name       Preset's name.                                         [required]
+  --namespace  Base namespace to deploy                      [string] [required]
 ```
 
 #### PR Filter-Labels
