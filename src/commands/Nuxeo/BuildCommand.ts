@@ -1,5 +1,6 @@
 import debug from 'debug';
 import { Arguments, Argv, CommandModule } from 'yargs';
+import { Helper } from '../../lib/Helper';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
 
 const log: debug.IDebugger = debug('command:nuxeo:build');
@@ -59,16 +60,10 @@ export class BuildCommand implements CommandModule {
   }
 
   protected formatDockerImageFullName = (args: Arguments): string => {
-    const reg: string | unknown = args.registry === undefined ? process.env.DOCKER_REGISTRY : args.registry;
-
-    return `${reg}/${this.formatDockerImageName(args)}:${args.tag}`;
+    return Helper.formatDockerImageFull(args.registry, args.organization, args.name, args.tag);
   }
 
   protected formatDockerImageName = (args: Arguments): string => {
-    if (args.organization !== undefined) {
-      return `${args.organization}/${args.name}`;
-    }
-
-    return `${args.name}`;
+    return Helper.formatDockerImage(args.organization, args.name);
   }
 }

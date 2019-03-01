@@ -1,6 +1,7 @@
 import debug from 'debug';
 import fs from 'fs';
 import yargs, { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
+import { Helper } from '../lib/Helper';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
 
 const log: debug.IDebugger = debug('command:preview');
@@ -17,49 +18,64 @@ export class PreviewCommand implements CommandModule {
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.middleware(this.helmInit);
     args.option({
+      tag: {
+        describe: 'Docker image\'s tag to deploy.',
+        type: 'string',
+        required: true,
+        default: process.env.PREVIEW_VERSION
+      },
+      organization: {
+        describe: 'Docker image\'s organization to deploy.',
+        type: 'string',
+        required: true,
+        default: process.env.ORG,
+      },
+      build: {
+        describe: 'Preview build version.',
+        type: 'string',
+        required: true,
+        default: process.env.PREVIEW_VERSION,
+      },
       comment: {
         describe: 'Skip the comment on PR',
         type: 'boolean',
-        default: true,
-        required: false
+        default: true
       },
       'log-level': {
         describe: 'Log level (ex: debug)',
         type: 'string',
-        default: 'debug',
-        required: false
+        default: 'debug'
       },
-      appname: {
-        describe: 'App name (optional - taken from Env by default)',
-        required: false,
-        type: 'string'
+      name: {
+        describe: 'Name',
+        type: 'string',
+        default: process.env.APP_NAME,
+        required: true,
       },
       'preview-dir': {
         describe: 'The working preview directory',
-        require: false,
         default: 'charts/preview'
       },
       'repo-host': {
         alias: ['h'],
         describe: 'Chart Museum Repository to use',
         default: 'http://jenkins-x-chartmuseum:8080',
-        type: 'string',
-        required: false
+        type: 'string'
       },
       preset: {
         describe: 'Preset to deploy with Nuxeo',
-        require: false,
         type: 'string',
         default: 'default',
       },
       namespace: {
         describe: 'Namespace (optional - computed by default)',
-        required: false,
         type: 'string'
       }
     });
-    args.example('$0 preview --preview-dir addon/charts/preview', 'Run a preview with a given preview directory');
-    args.example('$0 preview --no-comment', 'Run a preview - skipping PR comment');
+    args.example('$0 preview --preview-dir charts/preview', 'Deploy Preview from a given directory');
+    args.example('$0 preview --no-comment', 'Deploy Preview - without PR comment');
+    args.example('$0 preview --namespace $APP_NAME}-master --tag latest',
+      'Deploy Preview and override default namespace and Docker image tag versions');
 
     return args;
   }
@@ -67,36 +83,35 @@ export class PreviewCommand implements CommandModule {
   public handler = async (args: Arguments): Promise<string> => {
     log(args);
 
+    // Update Helm Chart valuesfile
     const valuesFile: string = `${args.previewDir}/values.yaml`;
     /* tslint:disable:non-literal-fs-path */
     if (!fs.existsSync(valuesFile)) {
       return Promise.reject(`File ${valuesFile} is unknown.`);
     }
-    this._replaceContents(`repository: ${process.env.DOCKER_REGISTRY}\/${process.env.ORG}\/${process.env.APP_NAME}`,
-      'repository:', valuesFile);
-    this._replaceContents(`tag: ${process.env.PREVIEW_VERSION}`, 'tag:', valuesFile);
+    this._replaceContents(`repository: ${this.formatDockerImageFullName(args)}`, 'repository:', valuesFile);
+    this._replaceContents(`tag: ${args.tag}`, 'tag:', valuesFile);
 
+    // Update Chart definition file
     const chartFile: string = `${args.previewDir}/Chart.yaml`;
     if (!fs.existsSync(chartFile)) {
       return Promise.reject(`File ${chartFile} is unknown.`);
     }
-    this._replaceContents(`version: ${process.env.PREVIEW_VERSION}`, 'version:', chartFile);
+    this._replaceContents(`version: ${args.build}`, 'version:', chartFile);
 
     await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
-    const appname: string = args.appname !== undefined ? <string>args.appname : `${process.env.APP_NAME}`;
     const namespace: string = args.namespace !== undefined ? <string>args.namespace :
-      `${args.preset}-${process.env.BRANCH_NAME}-${appname}`.substring(0, 63);
-
+      `${args.preset}-${process.env.BRANCH_NAME}-${args.name}`;
     log(`Preview namespace: ${namespace}`);
 
     const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
       .chCwd(args.previewDir)
       .arg('preview')
       .arg('--name')
-      .arg(appname)
+      .arg(args.name)
       .arg('--namespace')
-      .arg(namespace)
+      .arg(namespace.substring(0, 63))
       .arg('--log-level')
       .arg(args.logLevel);
 
@@ -125,6 +140,14 @@ export class PreviewCommand implements CommandModule {
     }
 
     return Promise.resolve();
+  }
+
+  protected formatDockerImageFullName = (args: Arguments): string => {
+    return Helper.formatDockerImageFull(args.registry, args.organization, args.name);
+  }
+
+  protected formatDockerImageName = (args: Arguments): string => {
+    return Helper.formatDockerImage(args.organization, args.name);
   }
 
   private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
