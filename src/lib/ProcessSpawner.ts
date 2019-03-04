@@ -1,4 +1,4 @@
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import debug from 'debug';
 import ora, { Options, Ora } from 'ora';
 import { basename } from 'path';
@@ -18,6 +18,8 @@ export class ProcessSpawner {
   protected _cwd: string = '';
 
   protected _dryRun: boolean = false;
+
+  protected _pipe?: ProcessSpawner;
 
   private readonly _log: debug.IDebugger;
 
@@ -70,6 +72,12 @@ export class ProcessSpawner {
     } else {
       this._log(`Unknown value type: ${val}`);
     }
+
+    return this;
+  }
+
+  public pipe(sp: ProcessSpawner): ProcessSpawner {
+    this._pipe = sp;
 
     return this;
   }
@@ -129,11 +137,7 @@ export class ProcessSpawner {
   }
 
   public async exec(): Promise<string> {
-    const proc: ChildProcess = spawn(this._process, this._args, {
-      cwd: this._cwd,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, ...this._envs },
-    });
+    const proc: ChildProcess = this.spawn();
 
     // Run cmd in dry run, with a fake timeour of 100ms
     if (this._dryRun) {
@@ -147,18 +151,14 @@ export class ProcessSpawner {
     return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
       const chunks: Uint8Array[] = [];
 
-      if (!(proc.stdout instanceof Readable && proc.stderr instanceof Readable)) {
-        reject(new Error('Unable to attach stdout/stderr'));
+      if (!(proc.stdout instanceof Readable)) {
+        reject(new Error('Unable to attach stdout.'));
 
         return;
       }
 
       proc.stdout.on('data', (data: Buffer) => {
         chunks.push(data);
-      });
-
-      proc.stderr.on('data', (data: Buffer) => {
-        process.stderr.write(data);
       });
 
       proc.on('close', (code: number) => {
@@ -175,5 +175,31 @@ export class ProcessSpawner {
         reject(err);
       });
     });
+  }
+
+  /**
+   * Spawn sub processes, and return either the subprocess, or the last piped process.
+   */
+  protected spawn(opts?: SpawnOptions): ChildProcess {
+    const proc: ChildProcess = spawn(this._process, this._args, {
+      cwd: this._cwd,
+      env: { ...process.env, ...this._envs },
+      stdio: ['pipe', 'pipe', 'inherit'],
+      windowsHide: true,
+      timeout: 10 * 1000,
+      ...opts
+    });
+
+    if (this._pipe === undefined) {
+      return proc;
+    }
+
+    const pipe: ChildProcess = this._pipe.spawn();
+    if (!(proc.stdout instanceof Readable && pipe.stdin instanceof Readable)) {
+      throw new Error(`Unable to initialize sub process: ${pipe}`);
+    }
+    proc.stdout.pipe(pipe.stdin);
+
+    return pipe;
   }
 }
