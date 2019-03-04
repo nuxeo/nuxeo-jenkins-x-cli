@@ -1,0 +1,236 @@
+#!/bin/bash
+#
+# (C) Copyright 2019 Nuxeo (http://nuxeo.com/) and others.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Contributors:
+#     Florent Guillaume
+#
+
+
+########## njx helm ##########
+
+
+njx-helm-usage() {
+  exec >&2
+  echo "Usage:"
+  echo "  njx helm install [-h|--repo-host <host>] -n|--namespace <namespace> <chart>"
+  echo "  njx helm cleanup [-h|--repo-host <host>] -n|--namespace <namespace> <chart>"
+  exit 2
+}
+
+njx-helm-checkhost() {
+  host=$1
+  if [ -z `helm home` ]; then
+    helm init --client-only
+    helm repo add local-jenkins-x "$host"
+  fi
+}
+
+njx-helm() {
+  if [ $# -eq 0 ]; then njx-helm-usage; fi
+  cmd=$1; shift
+
+  host=http://jenkins-x-chartmuseum:8080
+  namespace=
+  chart=
+  while [ $# -ne 0 ]; do
+    case $1 in
+      -h|--repo-host) host=$2; shift 2 ;;
+      -n|--namespace) namespace=$2; shift 2 ;;
+      -*) echo "Unknown option: $1" >&2; njx-helm-usage ;;
+      *) chart=$1; shift; break ;;
+    esac
+  done
+  if [ $# -ne 0 ]; then njx-helm-usage; fi
+  if [ -z "$namespace" ]; then echo "Namespace is required" >&2; njx-helm-usage; fi
+  if [ -z "$chart" ]; then echo "Chart is required" >&2; njx-helm-usage; fi
+
+  njx-helm-checkhost "$host"
+
+  case $cmd in
+      install)
+        helm install --name "$name" --namespace "$namespace" "$chart"
+        ;;
+      cleanup)
+        helm delete "$chart" --purge
+        kubectl delete ns "$namespace"
+        ;;
+      *) njx-helm-usage ;;
+  esac
+}
+
+
+########## njx preview ##########
+
+
+njx-preview-usage() {
+  exec >&2
+  echo "Usage:"
+  echo "  njx preview [-h|--repo-host <host>] [--namespace <namespace>] [--preset <preset>] [--no-comment] [--log-level <loglevel>] [--name <name>] [--preview-dir <previewdir>] [--tag <tag>] [--organization <organization>] [--build <build>]"
+  exit 2
+}
+
+njx-preview() {
+  host=http://jenkins-x-chartmuseum:8080
+  namespace=
+  preset=default
+  commentoption=
+  loglevel=debug
+  name=$APP_NAME
+  previewdir=charts/preview
+  tag=$PREVIEW_VERSION
+  organization=$ORG
+  build=$PREVIEW_VERSION
+  while [ $# -ne 0 ]; do
+    case $1 in
+      -h|--repo-host) host=$2; shift 2 ;;
+      --namespace) namespace=$2; shift 2 ;;
+      --preset) preset=$2; shift 2 ;;
+      --no-comment) commentoption=--no-comment; shift ;;
+      --log-level) loglevel=$2; shift 2 ;;
+      --name) name=$2; shift 2 ;;
+      --preview-dir) previewdir=$2; shift 2 ;;
+      --tag) tag=$2; shift 2 ;;
+      --organization) organization=$2; shift 2 ;;
+      --build) build=$2; shift 2 ;;
+      -*) echo "Unknown option: $1"; njx-preview-usage ;;
+      *) njx-preview-usage ;;
+    esac
+  done
+  if [ $# -ne 0 ]; then njx-preview-usage; fi
+  if [ -z "$tag" ]; then echo "Tag is required" >&2; njx-preview-usage; fi
+  if [ -z "$organization" ]; then echo "Organization is required" >&2; njx-preview-usage; fi
+  if [ -z "$build" ]; then echo "Build is required" >&2; njx-preview-usage; fi
+
+  njx-helm-checkhost "$host"
+
+  repository=$DOCKER_REGISTRY/$organization/$name
+
+  # Update Helm Chart valuesfile
+  valuesFile=$previewdir/values.yaml
+  if [ ! -f "$valuesFile" ]; then echo "File $valuesFile is unknown" >&2; exit 2; fi
+  sed -i.orig -e "s/^repository:.*/repository: $repository/" -e "s/^tag:/tag: $tag/" "$valuesFile"
+
+  # Update Chart definition file
+  chartFile=$previewdir/Chart.yaml
+  if [ ! -f "$chartFile" ]; then echo "File $chartFile is unknown" >&2; exit 2; fi
+  sed -i.orig -e "s/^version:.*/version: $build/" "$chartFile"
+
+  # Default for namespace
+  if [ -z "$namespace" ]; then
+    namespace=$preset-$BRANCH_NAME-$name
+  fi
+  echo "Preview namespace: $namespace"
+
+  cd "$previewdir"
+  jx step helm build
+  jx preview --name "$name" --namespace "$namespace" --log-level "$loglevel" $commentoption
+}
+
+
+########## njx pr ##########
+
+
+njx-pullrequest-usage() {
+  exec >&2
+  echo "Usage:"
+  echo "  njx pr filter-labels -m|--mode <mode> -l|--labels <labels>"
+  exit 2
+}
+
+njx-pullrequest() {
+  mode=preview
+  labels=()
+  while [ $# -ne 0 ]; do
+    case $1 in
+      -m|--mode) mode=$2; shift 2 ;;
+      -l|--labels)
+        shift
+        while [ $# -ne 0 ]; do
+          case $1 in
+            -*) break ;;
+            *) labels+=($1); shift ;;
+          esac
+        done
+        ;;
+      -*) echo "Unknown option: $1"; njx-pullrequest-usage ;;
+      *) njx-pullrequest-usage ;;
+    esac
+  done
+  if [ -z "$mode" ]; then echo "Mode is required" >&2; njx-pullrequest-usage; fi
+  if [ -z "$labels" ]; then echo "Labels is required" >&2; njx-pullrequest-usage; fi
+
+  for label in "${labels[@]}"; do
+    case $label in
+      $mode/*) echo ${label#"$mode/"}
+    esac
+  done
+}
+
+
+########## njx-nuxeo ##########
+
+
+njx-nuxeo-usage() {
+  exec >&2
+  echo "Usage:"
+  echo "  njx nuxeo vcs ..."
+  echo "  njx nuxeo build ..."
+  echo "  njx nuxeo preset install ..."
+  echo "  njx nuxeo preset purge ..."
+  exit 2
+}
+
+njx-nuxeo() {
+  if [ $# -eq 0 ]; then njx-nuxeo-usage; fi
+  mode=preview
+  labels=()
+  while [ $# -ne 0 ]; do
+    case $1 in
+      -m|--mode) mode=$2; shift 2 ;;
+      --todo) ;;
+      *) njx-nuxeo-usage ;;
+    esac
+  done
+
+  echo TODO
+}
+
+########## njx ##########
+
+
+njx-usage() {
+  exec >&2
+  echo "Usage:"
+  echo "  njx helm ..."
+  echo "  njx nuxeo ..."
+  echo "  njx pr ..."
+  echo "  njx preview ..."
+  exit 2
+}
+
+njx() {
+  if [ $# -eq 0 ]; then njx-usage; fi
+  cmd=$1; shift
+  case $cmd in
+      helm)    njx-helm "$@" ;;
+      nuxeo)   njx-nuxeo "$@" ;;
+      pr)      njx-pullrequest "$@" ;;
+      preview) njx-preview "$@" ;;
+      *) njx-usage ;;
+  esac
+}
+
+njx "$@"
