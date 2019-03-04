@@ -17,6 +17,15 @@ describe('ProcessSpawner', () => {
     expect(ps.cmd).eq('ls foo bar', 'Correctly compute full cmd');
   });
 
+  it('can pipe stdout once', async () => {
+    //cat /tmp/hello.world | grep h
+    const fileInfo: ProcessSpawner = new ProcessSpawner('file').arg('-i').arg('-');
+    const echo: ProcessSpawner = new ProcessSpawner('echo').arg('dummy-text').pipe(fileInfo);
+
+    const res: string = await echo.exec();
+    expect(res).contains('/dev/stdin');
+  })
+
   it('executes `ls -l` in /tmp using chcwd', async () => {
     const ps: ProcessSpawner = new ProcessSpawner('/bin/ls');
     ps.chCwd('/tmp').arg('-l');
