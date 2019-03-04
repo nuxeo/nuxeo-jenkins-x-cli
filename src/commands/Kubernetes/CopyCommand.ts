@@ -1,4 +1,5 @@
 import { Arguments, Argv, CommandModule } from 'yargs';
+import { Helper } from '../../lib/Helper';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
 
 /**
@@ -15,11 +16,13 @@ export class CopyCommand implements CommandModule {
         type: 'string',
         demandOption: true,
         describe: 'Source resource namespace',
+        coerce: Helper.formatNamespace,
       },
       to: {
         type: 'string',
         demandOption: true,
         describe: 'Target resource namespace',
+        coerce: Helper.formatNamespace,
       }
     });
 

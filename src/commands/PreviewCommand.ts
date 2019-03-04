@@ -111,8 +111,9 @@ export class PreviewCommand implements CommandModule {
 
     await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
 
-    const namespace: string = args.namespace !== undefined ? <string>args.namespace :
+    let namespace: string = args.namespace !== undefined ? <string>args.namespace :
       `${args.preset}-${process.env.BRANCH_NAME}-${args.name}`;
+    namespace = Helper.formatNamespace(namespace);
     log(`Preview namespace: ${namespace}`);
 
     // Copy Secrets and ConfigMap to target NS
@@ -144,7 +145,7 @@ export class PreviewCommand implements CommandModule {
       .arg('--name')
       .arg(args.name)
       .arg('--namespace')
-      .arg(Helper.formatNamespace(namespace))
+      .arg(namespace)
       .arg('--log-level')
       .arg(args.logLevel);
 
