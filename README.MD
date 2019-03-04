@@ -370,6 +370,7 @@ Deploys a Jenkins-X Preview in the target namespace. Configure and install local
 - Appends freshly build Docker Image references (based on `${DOCKER_REGISTRY}/${ORG}/${APP_NAME}:${PREVIEW_VERSION}`).
 - Align Helm Chart's version on `${PREVIEW_VERSION}` number.
 - Template Helm Chart before deploy using `jx step helm build`
+- Copy either secrets and config maps (from opts `--copy-secret` and `--copy-configmap`) from cluster namespace (using `jx ns -b`) to preview's namespace using `njx k8s copy` cmd.
 - Deploy Chart as a Jenkins-X Preview using `jx preview --name ${APP_NAME} --namespace ${NAMESPACE}` which leads to add a comment in the associated PR with the preview URL (Can be disabled using `--comment=false` option).
 
 Help:
@@ -380,21 +381,23 @@ njx preview
 Run a preview based on preset
 
 Options:
-  --version        Show version number                                 [boolean]
-  --dry-run        Do not change anything in the system
+  --version         Show version number                                [boolean]
+  --dry-run         Do not change anything in the system
                                                       [boolean] [default: false]
-  --help           Show help                                           [boolean]
-  --tag            Docker image's tag to deploy.             [string] [required]
-  --organization   Docker image's organization to deploy.    [string] [required]
-  --build          Preview build version.                    [string] [required]
-  --comment        Skip the comment on PR              [boolean] [default: true]
-  --log-level      Log level (ex: debug)             [string] [default: "debug"]
-  --name           Name                                      [string] [required]
-  --preview-dir    The working preview directory     [default: "charts/preview"]
-  --repo-host, -h  Chart Museum Repository to use
+  --help            Show help                                          [boolean]
+  --tag             Docker image's tag to deploy.            [string] [required]
+  --organization    Docker image's organization to deploy.   [string] [required]
+  --build           Preview build version.                   [string] [required]
+  --comment         Skip the comment on PR             [boolean] [default: true]
+  --log-level       Log level (ex: debug)            [string] [default: "debug"]
+  --copy-secret     K8S Secret to copy                     [array] [default: []]
+  --copy-configmap  K8S Config Map to copy                 [array] [default: []]
+  --name            Name                                     [string] [required]
+  --preview-dir     The working preview directory    [default: "charts/preview"]
+  --repo-host, -h   Chart Museum Repository to use
                          [string] [default: "http://jenkins-x-chartmuseum:8080"]
-  --preset         Preset to deploy with Nuxeo     [string] [default: "default"]
-  --namespace      Namespace (optional - computed by default)           [string]
+  --preset          Preset to deploy with Nuxeo    [string] [default: "default"]
+  --namespace       Namespace (optional - computed by default)          [string]
 
 Examples:
   index.ts preview --preview-dir            Deploy Preview from a given

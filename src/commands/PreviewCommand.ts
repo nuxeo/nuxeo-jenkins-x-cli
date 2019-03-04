@@ -46,6 +46,16 @@ export class PreviewCommand implements CommandModule {
         type: 'string',
         default: 'debug'
       },
+      'copy-secret': {
+        describe: 'K8S Secret to copy',
+        type: 'array',
+        default: []
+      },
+      'copy-configmap': {
+        describe: 'K8S Config Map to copy',
+        type: 'array',
+        default: []
+      },
       name: {
         describe: 'Name',
         type: 'string',
@@ -104,6 +114,29 @@ export class PreviewCommand implements CommandModule {
     const namespace: string = args.namespace !== undefined ? <string>args.namespace :
       `${args.preset}-${process.env.BRANCH_NAME}-${args.name}`;
     log(`Preview namespace: ${namespace}`);
+
+    // Copy Secrets and ConfigMap to target NS
+    const jxNs: string = await ProcessSpawner.create('jx').arg('ns').arg('-b').execWithSpinner();
+    const nsMatch: RegExpMatchArray | null = jxNs.match(/^Using namespace '(.+?)'/);
+    log(nsMatch);
+    if (nsMatch === null) {
+      return Promise.reject('Unable to determine current K8s namespace');
+    }
+    const currentNs: string = nsMatch[1];
+    (<string[]>args['copy-secret']).forEach(async (secret: string) => {
+      await ProcessSpawner.createSub(args).arg('k8s').arg('copy')
+        .arg('--from').arg(currentNs)
+        .arg('--to').arg(namespace)
+        .arg('secret').arg(secret)
+        .execWithSpinner();
+    });
+    (<string[]>args['copy-configmap']).forEach(async (cm: string) => {
+      await ProcessSpawner.createSub(args).arg('k8s').arg('copy')
+        .arg('--from').arg(currentNs)
+        .arg('--to').arg(namespace)
+        .arg('cm').arg(cm)
+        .execWithSpinner();
+    });
 
     const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
       .chCwd(args.previewDir)
