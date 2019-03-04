@@ -97,7 +97,12 @@ export class ProcessSpawner {
   }
 
   get cmd(): string {
-    return `${this.process} ${this.args}`;
+    let cmd: string = `${this.process} ${this.args}`;
+    if (this._pipe !== undefined) {
+      cmd += ` | ${this._pipe.cmd}`;
+    }
+
+    return cmd;
   }
 
   get cwd(): string {
@@ -137,8 +142,6 @@ export class ProcessSpawner {
   }
 
   public async exec(): Promise<string> {
-    const proc: ChildProcess = this.spawn();
-
     // Run cmd in dry run, with a fake timeour of 100ms
     if (this._dryRun) {
       return new Promise<string>((resolve: (res: string) => void): void => {
@@ -147,6 +150,8 @@ export class ProcessSpawner {
         }, 100);
       });
     }
+
+    const proc: ChildProcess = this.spawn();
 
     return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
       const chunks: Uint8Array[] = [];
