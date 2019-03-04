@@ -344,6 +344,25 @@ Examples:
   preview/mongodb
 ```
 
+#### Kubernetes Copy
+
+Copy one Kubernetes resource from one namespace to another one.
+
+Help:
+
+```text
+njx k8s copy <resource> <name>
+
+Copy K8s resource from one namespace to another one
+
+Options:
+  --version  Show version number                                       [boolean]
+  --dry-run  Do not change anything in the system     [boolean] [default: false]
+  --help     Show help                                                 [boolean]
+  --from     Source resource namespace                       [string] [required]
+  --to       Target resource namespace                       [string] [required]
+```
+
 #### Preview
 
 Deploys a Jenkins-X Preview in the target namespace. Configure and install local `preview` chart (Default: `charts/preview` folder) based on default Jenkins-X behaviors:
