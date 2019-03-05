@@ -124,20 +124,20 @@ export class PreviewCommand implements CommandModule {
       return Promise.reject('Unable to determine current K8s namespace');
     }
     const currentNs: string = nsMatch[1];
-    (<string[]>args['copy-secret']).forEach(async (secret: string) => {
+    for (const secret of <string[]>args['copy-secret']) {
       await ProcessSpawner.createSub(args).arg('k8s').arg('copy')
         .arg('--from').arg(currentNs)
         .arg('--to').arg(namespace)
         .arg('secret').arg(secret)
         .execWithSpinner();
-    });
-    (<string[]>args['copy-configmap']).forEach(async (cm: string) => {
+    }
+    for (const cm of <string[]>args['copy-configmap']) {
       await ProcessSpawner.createSub(args).arg('k8s').arg('copy')
         .arg('--from').arg(currentNs)
         .arg('--to').arg(namespace)
         .arg('cm').arg(cm)
         .execWithSpinner();
-    });
+    }
 
     const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
       .chCwd(args.previewDir)
