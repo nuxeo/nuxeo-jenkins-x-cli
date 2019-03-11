@@ -1,5 +1,6 @@
 import debug from 'debug';
 import fs from 'fs';
+import path from 'path';
 import yargs, { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { Helper } from '../lib/Helper';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
@@ -80,6 +81,12 @@ export class PreviewCommand implements CommandModule {
       namespace: {
         describe: 'Namespace (optional - computed by default)',
         type: 'string'
+      },
+      runner: {
+        describe: 'Define which runner deploys the preview',
+        default: 'jx',
+        type: 'string',
+        choices: ['jx', 'helm']
       }
     });
     args.example('$0 preview --preview-dir charts/preview', 'Deploy Preview from a given directory');
@@ -139,21 +146,36 @@ export class PreviewCommand implements CommandModule {
         .execWithSpinner();
     }
 
-    const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
-      .chCwd(args.previewDir)
-      .arg('preview')
-      .arg('--name')
-      .arg(args.name)
-      .arg('--namespace')
-      .arg(namespace)
-      .arg('--log-level')
-      .arg(args.logLevel);
+    if (args.runner === 'jx') {
+      const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
+        .chCwd(args.previewDir)
+        .arg('preview')
+        .arg('--name')
+        .arg(args.name)
+        .arg('--namespace')
+        .arg(namespace)
+        .arg('--log-level')
+        .arg(args.logLevel);
 
-    if (args.comment === false) {
-      previewProcess.arg('--no-comment');
+      if (args.comment === false) {
+        previewProcess.arg('--no-comment');
+      }
+
+      return previewProcess.execWithSpinner();
     }
 
-    return previewProcess.execWithSpinner();
+    if (args.runner === 'helm') {
+      const pp: ProcessSpawner = ProcessSpawner.createSub(args)
+        .arg('helm').arg('install')
+        .arg('--namespace').arg(namespace)
+        .arg('--values').arg(path.join(`${args.previewDir}`, 'values.yaml'))
+        .arg('--name').arg(args.name)
+        .arg('local-jenkins-x/nuxeo');
+
+      return pp.execWithSpinner();
+    }
+
+    return Promise.reject('Preview runner not defined');
   }
 
   public helmInit: MiddlewareFunction = async (args: Arguments): Promise<void> => {
