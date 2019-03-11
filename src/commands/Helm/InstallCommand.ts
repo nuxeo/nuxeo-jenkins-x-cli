@@ -13,16 +13,26 @@ export class InstallCommand implements CommandModule {
     name: {
       type: 'string',
       demandOption: true,
+    },
+    values: {
+      alias: ['f'],
+      type: 'string',
+      description: 'Specify values in a YAML file.'
     }
   };
 
-  public handler = async (args: Arguments): Promise<void> => {
-    await ProcessSpawner.create('helm')
+  public handler = async (args: Arguments): Promise<string> => {
+    const ps: ProcessSpawner = ProcessSpawner.create('helm')
       .arg('install')
       .arg('--name').arg(args.name)
-      .arg('--namespace').arg(args.namespace)
-      .arg(args.chart).execWithSpinner();
+      .arg('--namespace').arg(args.namespace);
 
-    return Promise.resolve();
+    if (args.values !== undefined) {
+      ps.arg('-f').arg(args.values);
+    }
+
+    ps.arg(args.chart);
+
+    return ps.execWithSpinner();
   }
 }
