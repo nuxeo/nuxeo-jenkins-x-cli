@@ -4,6 +4,7 @@ interface IHelper {
   formatDockerImage(org: unknown, name: unknown): string;
   formatDockerImageFull(registry: unknown, org: unknown, name: unknown, tag?: unknown): string;
   formatNamespace(namespace: string, ellipsis?: string): string;
+  formatDNS(name: string): string;
 }
 
 const Helper: IHelper = {
@@ -26,6 +27,10 @@ const Helper: IHelper = {
     const trucatedNs: string = cliTruncate(namespace.toLocaleLowerCase(), 64, { position: 'middle' });
 
     return trucatedNs.replace('…', ellipsis);
+  },
+
+  formatDNS: (name: string): string => {
+    return name.toLocaleLowerCase();
   }
 };
 

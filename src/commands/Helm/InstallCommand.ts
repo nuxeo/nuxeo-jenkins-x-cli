@@ -1,4 +1,5 @@
 import { Arguments, CommandModule, Options } from 'yargs';
+import { Helper } from '../../lib/Helper';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
 
 /**
@@ -13,6 +14,7 @@ export class InstallCommand implements CommandModule {
     name: {
       type: 'string',
       demandOption: true,
+      coerce: Helper.formatDNS,
     },
     values: {
       alias: ['f'],

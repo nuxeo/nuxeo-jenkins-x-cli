@@ -1,5 +1,6 @@
 import debug from 'debug';
 import { Arguments, CommandModule, Options } from 'yargs';
+import { Helper } from '../../lib/Helper';
 import { ProcessSpawner } from '../../lib/ProcessSpawner';
 
 const log: debug.IDebugger = debug('command:helm:cleanup');
@@ -16,6 +17,7 @@ export class CleanupCommand implements CommandModule {
     name: {
       type: 'string',
       demandOption: true,
+      coerce: Helper.formatDNS,
     }
   };
 
