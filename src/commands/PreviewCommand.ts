@@ -116,8 +116,6 @@ export class PreviewCommand implements CommandModule {
     }
     this._replaceContents(`version: ${args.build}`, 'version:', chartFile);
 
-    await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
-
     let namespace: string = args.namespace !== undefined ? <string>args.namespace :
       `${args.preset}-${process.env.BRANCH_NAME}-${args.name}`;
     namespace = Helper.formatNamespace(namespace);
@@ -147,6 +145,8 @@ export class PreviewCommand implements CommandModule {
     }
 
     if (args.runner === 'jx') {
+      await ProcessSpawner.create('jx').chCwd(args.previewDir).arg('step').arg('helm').arg('build').execWithSpinner();
+
       const previewProcess: ProcessSpawner = ProcessSpawner.create('jx')
         .chCwd(args.previewDir)
         .arg('preview')
