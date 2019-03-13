@@ -9,6 +9,8 @@ import yargs, { Arguments } from 'yargs';
  * Helper class to easily spawm process
  */
 export class ProcessSpawner {
+  protected _childProcess: ChildProcess | undefined;
+
   protected _process: string;
 
   protected _args: string[] = [];
@@ -151,22 +153,21 @@ export class ProcessSpawner {
       });
     }
 
-    const proc: ChildProcess = this.spawn();
-
     return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
       const chunks: Uint8Array[] = [];
+      this._childProcess = this.spawn();
 
-      if (!(proc.stdout instanceof Readable)) {
+      if (!(this._childProcess.stdout instanceof Readable)) {
         reject(new Error('Unable to attach stdout.'));
 
         return;
       }
 
-      proc.stdout.on('data', (data: Buffer) => {
+      this._childProcess.stdout.on('data', (data: Buffer) => {
         chunks.push(data);
       });
 
-      proc.on('close', (code: number) => {
+      this._childProcess.on('close', (code: number) => {
         this._log(`on close: ${code}`);
         if (code !== 0) {
           reject(code);
@@ -175,11 +176,21 @@ export class ProcessSpawner {
         }
       });
 
-      proc.on('error', (err: Error) => {
+      this._childProcess.on('error', (err: Error) => {
         this._log(`on error: %O`, err);
         reject(err);
       });
     });
+  }
+
+  public kill(): boolean {
+    if (this._childProcess !== undefined) {
+      this._childProcess.kill();
+
+      return true;
+    }
+
+    return false;
   }
 
   /**

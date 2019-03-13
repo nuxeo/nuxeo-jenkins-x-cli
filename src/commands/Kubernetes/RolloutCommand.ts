@@ -16,8 +16,14 @@ export class RolloutCommand implements CommandModule {
         alias: ['ns'],
         type: 'string',
         demandOption: true,
-        describe: 'Target resource namespace',
+        describe: 'Target resource namespace.',
         coerce: Helper.formatNamespace,
+      },
+      timeout: {
+        alias: ['t'],
+        type: 'number',
+        describe: 'Rollout timeout in seconds.',
+        default: 120,
       }
     });
 
@@ -25,10 +31,25 @@ export class RolloutCommand implements CommandModule {
   }
 
   public handler = async (args: Arguments): Promise<string> => {
-    return ProcessSpawner.create('kubectl')
-      .arg('-n').arg(`${args.namespace}`)
-      .arg('rollout').arg('status')
-      .arg(`${args.resource}`).arg(`${args.name}`)
-      .execWithSpinner();
+    return new Promise<string>((resolve: (res: string) => void, reject: (err: Number | Error) => void): void => {
+      const k8s: ProcessSpawner = ProcessSpawner.create('kubectl')
+        .arg('-n').arg(`${args.namespace}`)
+        .arg('rollout').arg('status')
+        .arg(`${args.resource}`).arg(`${args.name}`);
+
+      // Protect rollout excecution with a timeout
+      const timeout: NodeJS.Timeout = setTimeout(() => {
+        k8s.kill();
+        reject(new Error('Rollout is taking too long...'));
+      }, <number>args.timeout * 1000);
+
+      k8s.execWithSpinner().then((res: string) => {
+        clearTimeout(timeout);
+
+        resolve(res);
+      }).catch((err: Number | Error) => {
+        reject(err);
+      });
+    });
   }
 }
