@@ -13,3 +13,9 @@ nuxeo:
       database: nuxeo
       user: nuxeo
       password: nuxeo
+  preview:
+    values:
+      - path: nuxeo.mongodb.deploy
+        value: true
+      - path: nuxeo.postgresql.deploy
+        value: false

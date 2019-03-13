@@ -16,7 +16,7 @@ describe('Preset Command', () => {
 
   it('throw exception if file is missing', () => {
     try {
-      cmd['readYaml']('/tmp/foo_bar_123');
+      PresetCommand['readYaml']('/tmp/foo_bar_123');
       expect.fail('Should thorw exception');
     } catch (err) {
       // XXX Nothing to do
@@ -24,13 +24,13 @@ describe('Preset Command', () => {
   });
 
   it('parse correctly random yaml file', () => {
-    const preset: any = cmd['readYaml'](findPresetPath('mongodb'));
+    const preset: any = PresetCommand['readYaml'](findPresetPath('mongodb'));
     expect(preset.helm.chart).eq('local-jenkins-x/nuxeo-mongodb');
     expect(preset.nuxeo.vcs.properties.server).eq('mongodb://..svc.cluster.local');
   });
 
   it('render variables in yaml file', () => {
-    const preset: any = cmd['readYaml'](findPresetPath('mongodb'), {
+    const preset: any = PresetCommand['readYaml'](findPresetPath('mongodb'), {
       APP_NAME: 'mongodb',
       NAMESPACE: 'nuxeal'
     });

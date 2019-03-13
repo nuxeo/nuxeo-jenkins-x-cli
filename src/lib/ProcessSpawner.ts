@@ -23,12 +23,31 @@ export class ProcessSpawner {
 
   protected _pipe?: ProcessSpawner;
 
-  private readonly _log: debug.IDebugger;
+  get args(): string {
+    return this._args.join(' ');
+  }
 
-  constructor(process: string) {
-    this._process = process;
-    this._log = debug(`process:${basename(process)}`);
-    this._dryRun = yargs.argv.dryRun === true;
+  get envs(): string {
+    return Object.keys(this._envs).map((key: string) => {
+      return `${key}=${this._envs[key]}`;
+    }).join(';');
+  }
+
+  get process(): string {
+    return `${this._process}`;
+  }
+
+  get cmd(): string {
+    let cmd: string = `${this.process} ${this.args}`;
+    if (this._pipe !== undefined) {
+      cmd += ` | ${this._pipe.cmd}`;
+    }
+
+    return cmd;
+  }
+
+  get cwd(): string {
+    return `${this._cwd}`;
   }
 
   // tslint:disable-next-line:no-any
@@ -58,6 +77,14 @@ export class ProcessSpawner {
     return ps;
   }
 
+  private readonly _log: debug.IDebugger;
+
+  constructor(process: string) {
+    this._process = process;
+    this._log = debug(`process:${basename(process)}`);
+    this._dryRun = yargs.argv.dryRun === true;
+  }
+
   public arg(arg: string | unknown): ProcessSpawner {
     if (typeof arg === 'string') {
       this._args.push(arg);
@@ -82,33 +109,6 @@ export class ProcessSpawner {
     this._pipe = sp;
 
     return this;
-  }
-
-  get args(): string {
-    return this._args.join(' ');
-  }
-
-  get envs(): string {
-    return Object.keys(this._envs).map((key: string) => {
-      return `${key}=${this._envs[key]}`;
-    }).join(';');
-  }
-
-  get process(): string {
-    return `${this._process}`;
-  }
-
-  get cmd(): string {
-    let cmd: string = `${this.process} ${this.args}`;
-    if (this._pipe !== undefined) {
-      cmd += ` | ${this._pipe.cmd}`;
-    }
-
-    return cmd;
-  }
-
-  get cwd(): string {
-    return `${this._cwd}`;
   }
 
   public chDryRun(dr: boolean | unknown): ProcessSpawner {

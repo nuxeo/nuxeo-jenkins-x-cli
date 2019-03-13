@@ -10,6 +10,9 @@
         "order": [
           "public-static-field",
           "private-static-field",
+          "public-static-method",
+          "protected-static-method",
+          "private-static-method",
           "public-instance-field",
           "private-instance-field",
           "public-constructor",

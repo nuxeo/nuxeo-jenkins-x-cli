@@ -11,3 +11,9 @@ nuxeo:
     properties:
       server: mongodb://{{APP_NAME}}.{{NAMESPACE}}.svc.cluster.local
       dbname: vcstest
+  preview:
+    values:
+      - path: nuxeo.mongodb.deploy
+        value: true
+      - path: nuxeo.postgresql.deploy
+        value: false
