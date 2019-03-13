@@ -1,14 +1,13 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { YamlModifier } from '../src/lib/YamlModifier';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import tmp from 'tmp';
+
 import { fail } from 'assert';
 
 describe('YamlModifier', () => {
   let yml: YamlModifier;
-  before(() => {
+  beforeEach(() => {
     yml = new YamlModifier('./test/sample.yaml');
   });
 
@@ -53,9 +52,20 @@ describe('YamlModifier', () => {
   describe('can write', () => {
 
     let newFile: string;
-    before(() => {
-      const tmpDir: string = fs.mkdtempSync(path.join(os.tmpdir(), 'njx-'));
-      newFile = path.join(tmpDir, 'my-new.yaml');
+    beforeEach(() => {
+      newFile = tmp.tmpNameSync({
+        postfix: '.yaml'
+      });
+    });
+
+    it('update his origin file', () => {
+      yml.setValue('nuxeo.nuxeo.image.repository', 'DOCK_REG')
+        .write(newFile);
+
+      const newYml: YamlModifier = new YamlModifier(newFile);
+      newYml
+        .setValue('nuxeo.nuxeo.image.repository', 'UP!')
+        .write();
     });
 
     it('content in a file', () => {
@@ -70,8 +80,8 @@ describe('YamlModifier', () => {
     });
 
     it('only in not existing file', () => {
+      yml.write(newFile);
       try {
-        yml.write(newFile);
         yml.write(newFile);
         fail('Should not write twice the same file');
       } catch (err) {
