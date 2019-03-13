@@ -135,6 +135,7 @@ Options:
                                   [default: "http://jenkins-x-chartmuseum:8080"]
   --namespace, -n  Target Kubernetes namespace.                       [required]
   --name                                                     [string] [required]
+  --values, -f     Specify values in a YAML file.                       [string]
 ```
 
 ##### Helm Cleanup
@@ -344,7 +345,26 @@ Examples:
   preview/mongodb
 ```
 
-#### Kubernetes Copy
+#### Kubernetes
+
+##### Rollout
+
+Watch rollout status and wait until ressource is up and running
+
+```text
+njx k8s rollout <resource> <name>
+
+Watch the status of the latest rollout until it's done
+
+Options:
+  --version          Show version number                               [boolean]
+  --dry-run          Do not change anything in the system
+                                                      [boolean] [default: false]
+  --help             Show help                                         [boolean]
+  --namespace, --ns  Target resource namespace               [string] [required]
+```
+
+##### Copy
 
 Copy one Kubernetes resource from one namespace to another one.
 
@@ -398,6 +418,8 @@ Options:
                          [string] [default: "http://jenkins-x-chartmuseum:8080"]
   --preset          Preset to deploy with Nuxeo    [string] [default: "default"]
   --namespace       Namespace (optional - computed by default)          [string]
+  --runner          Define which runner deploys the preview
+                                [string] [choices: "jx", "helm"] [default: "jx"]
 
 Examples:
   index.ts preview --preview-dir            Deploy Preview from a given
