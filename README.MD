@@ -362,6 +362,7 @@ Options:
                                                       [boolean] [default: false]
   --help             Show help                                         [boolean]
   --namespace, --ns  Target resource namespace               [string] [required]
+  --timeout, -t      Rollout timeout in seconds.         [number] [default: 120]
 ```
 
 ##### Copy
