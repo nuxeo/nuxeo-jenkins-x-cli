@@ -1,9 +1,10 @@
 import debug from 'debug';
 import fs from 'fs';
 import path from 'path';
-import yargs, { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
+import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
 import { Helper } from '../lib/Helper';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
+import { YamlModifier } from '../lib/YamlModifier';
 
 const log: debug.IDebugger = debug('command:preview');
 
@@ -101,20 +102,17 @@ export class PreviewCommand implements CommandModule {
     log(args);
 
     // Update Helm Chart valuesfile
-    const valuesFile: string = `${args.previewDir}/values.yaml`;
-    /* tslint:disable:non-literal-fs-path */
-    if (!fs.existsSync(valuesFile)) {
-      return Promise.reject(`File ${valuesFile} is unknown.`);
-    }
-    this._replaceContents(`repository: ${this.formatDockerImageFullName(args)}`, 'repository:', valuesFile);
-    this._replaceContents(`tag: ${args.tag}`, 'tag:', valuesFile);
+    const valuesFile: string = path.join(`${args.previewDir}`, 'values.yaml');
+    new YamlModifier(valuesFile)
+      .setValue('nuxeo.nuxeo.image.repository', this.formatDockerImageFullName(args))
+      .setValue('nuxeo.nuxeo.image.tag', args.tag)
+      .write();
 
     // Update Chart definition file
-    const chartFile: string = `${args.previewDir}/Chart.yaml`;
-    if (!fs.existsSync(chartFile)) {
-      return Promise.reject(`File ${chartFile} is unknown.`);
-    }
-    this._replaceContents(`version: ${args.build}`, 'version:', chartFile);
+    const chartFile: string = path.join(`${args.previewDir}`, 'Chart.yaml');
+    new YamlModifier(chartFile)
+      .setValue('version', args.build)
+      .write();
 
     let namespace: string = args.namespace !== undefined ? <string>args.namespace :
       `${args.preset}-${process.env.BRANCH_NAME}-${args.name}`;
@@ -165,10 +163,16 @@ export class PreviewCommand implements CommandModule {
     }
 
     if (args.runner === 'helm') {
+      // While using Helm, e need to rebase values from nuxeo node.
+      // This is a requirement as using helm will rely directly on nuxeo/nuxeo chart,
+      // and not like preview that has nuxeo/nuxeo as a dependency.
+      const presetValues: string = path.join(`${args.previewDir}`, `helm-${args.preset}-values.yaml`);
+      new YamlModifier(valuesFile).rebase('nuxeo').write(presetValues);
+
       const pp: ProcessSpawner = ProcessSpawner.createSub(args)
         .arg('helm').arg('install')
         .arg('--namespace').arg(namespace)
-        .arg('--values').arg(path.join(`${args.previewDir}`, 'values.yaml'))
+        .arg('--values').arg(presetValues)
         .arg('--name').arg(args.name)
         .arg('local-jenkins-x/nuxeo');
 
@@ -204,22 +208,5 @@ export class PreviewCommand implements CommandModule {
 
   protected formatDockerImageName = (args: Arguments): string => {
     return Helper.formatDockerImage(args.organization, args.name);
-  }
-
-  private readonly _replaceContents = (replacement: string, occurence: string, file: string): void => {
-    log(`Replace content '${occurence}' in ${file} by ${replacement}`);
-    /* tslint:disable:non-literal-fs-path */
-    const content: string = fs.readFileSync(file, 'utf8');
-    const regexp: RegExp = new RegExp(`${occurence}.*`, 'g');
-    const result: string = content.replace(regexp, replacement);
-
-    if (yargs.argv.dryRun === true) {
-      log('Result content: %O', result);
-
-      return;
-    }
-
-    /* tslint:disable:non-literal-fs-path */
-    fs.writeFileSync(file, result);
   }
 }

@@ -45,7 +45,7 @@ describe('YamlModifier', () => {
 
   it('can change yaml root', () => {
     expect(yml.content.nuxeo.fullnameOverride).equal('preview');
-    yml.reRoot('nuxeo.nuxeo.image');
+    yml.rebase('nuxeo.nuxeo.image');
 
     expect(yml.content.pullPolicy).equal('Always');
   });
