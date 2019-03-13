@@ -1,10 +1,12 @@
 import debug from 'debug';
-import fs from 'fs';
+import _ from 'lodash';
 import path from 'path';
-import { Arguments, Argv, CommandModule, MiddlewareFunction } from 'yargs';
+import { Arguments, Argv, CommandModule } from 'yargs';
 import { Helper } from '../lib/Helper';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
 import { YamlModifier } from '../lib/YamlModifier';
+import { HelmCommand } from './HelmCommand';
+import { PresetCommand } from './Nuxeo/PresetCommand';
 
 const log: debug.IDebugger = debug('command:preview');
 
@@ -18,7 +20,8 @@ export class PreviewCommand implements CommandModule {
   public describe: string = 'Run a preview based on preset';
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
-    args.middleware(this.helmInit);
+    // Add Helm middleware as it depends on helm cmds
+    args.middleware(HelmCommand.helmInit);
     args.option({
       tag: {
         describe: 'Docker image\'s tag to deploy.',
@@ -108,12 +111,15 @@ export class PreviewCommand implements CommandModule {
       .setValue('nuxeo.nuxeo.image.tag', args.tag)
       .write();
 
+    this.appendPresetValues(valuesFile, `${args.preset}`);
+
     // Update Chart definition file
     const chartFile: string = path.join(`${args.previewDir}`, 'Chart.yaml');
     new YamlModifier(chartFile)
       .setValue('version', args.build)
       .write();
 
+    // Compute namespace
     let namespace: string = args.namespace !== undefined ? <string>args.namespace :
       `${args.preset}-${process.env.BRANCH_NAME}-${args.name}`;
     namespace = Helper.formatNamespace(namespace);
@@ -169,6 +175,11 @@ export class PreviewCommand implements CommandModule {
       const presetValues: string = path.join(`${args.previewDir}`, `helm-${args.preset}-values.yaml`);
       new YamlModifier(valuesFile).rebase('nuxeo').write(presetValues);
 
+      // XXX Mandatory to append one more time dependency dep flag
+      // Because of the opposite reason of the rebase; dependencies look for `nuxeo.*` flag, which has been removed
+      // See: https://github.com/nuxeo/nuxeo-helm-charts/blob/master/nuxeo/requirements.yaml
+      this.appendPresetValues(valuesFile, `${args.preset}`);
+
       const pp: ProcessSpawner = ProcessSpawner.createSub(args)
         .arg('helm').arg('install')
         .arg('--namespace').arg(namespace)
@@ -182,24 +193,18 @@ export class PreviewCommand implements CommandModule {
     return Promise.reject('Preview runner not defined');
   }
 
-  public helmInit: MiddlewareFunction = async (args: Arguments): Promise<void> => {
+  protected appendPresetValues(valuesFile: string, preset: string): void {
+    const yamlFile: YamlModifier = new YamlModifier(valuesFile);
 
-    const helmHome: string = await ProcessSpawner.create('helm').arg('home').execWithSpinner();
-    /* tslint:disable:non-literal-fs-path */
-    if (!fs.existsSync(helmHome)) {
-      log(`Helm home is not initialized in: ${helmHome}`);
-      await ProcessSpawner.create('helm').arg('init').arg('--client-only').execWithSpinner();
-      await ProcessSpawner.create('helm')
-        .arg('repo')
-        .arg('add')
-        .arg('local-jenkins-x')
-        .arg(args.repoHost)
-        .execWithSpinner();
-    } else {
-      log(`Helm home initialized in: ${helmHome}`);
+    // Update values depending of preset
+    const presetObj: {} = PresetCommand.readPreset(preset);
+    const values: [] = _.get(presetObj, 'nuxeo.preview.values');
+    if (values !== undefined) {
+      values.forEach((entry: { path: string; value: string }) => {
+        yamlFile.setValue(entry.path, entry.value);
+      });
     }
-
-    return Promise.resolve();
+    yamlFile.write();
   }
 
   protected formatDockerImageFullName = (args: Arguments): string => {
