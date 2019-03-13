@@ -33,17 +33,19 @@ export class YamlModifier {
    * @param value to set
    */
   public setValue(path: string, value: any): YamlModifier {
+    log(`Changing value "${path}": "${value}" (${this.filePath})`);
     _.set(this.yaml, path, value);
 
     return this;
   }
 
   /**
-   * Change Yaml file root node to a child node, all sibling nodes are lost.
+   * Change Yaml file root node to a child node, all sibling nodes are lost. See https://lodash.com/docs/4.17.10#get for syntax
    *
    * @param path of the new root, key is rebased as root.
    */
-  public reRoot(path: string): YamlModifier {
+  public rebase(path: string): YamlModifier {
+    log(`Rebasing to "${path}" (${this.filePath})`);
     this.yaml = _.get(this.yaml, path);
 
     return this;
@@ -58,7 +60,6 @@ export class YamlModifier {
       throw new Error(`File ${filePath} already exists, you should force to override it.`);
     }
 
-    const flag: string = (force ? 'w' : 'wx');
-    fs.writeFileSync(filePath, yaml.dump(this.yaml), { flag });
+    fs.writeFileSync(filePath, yaml.dump(this.yaml));
   }
 }
