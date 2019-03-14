@@ -45,6 +45,7 @@ export class InstallCommand implements CommandModule {
       await ProcessSpawner.createSub(args)
         .arg('helm')
         .arg('install')
+        .arg('--debug')
         .arg('--name').arg(args.namespace)
         .arg('--namespace').arg(args.namespace)
         .arg(preset.helm.chart)

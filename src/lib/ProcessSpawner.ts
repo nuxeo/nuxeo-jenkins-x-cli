@@ -172,7 +172,9 @@ export class ProcessSpawner {
         if (code !== 0) {
           reject(code);
         } else {
-          resolve(Buffer.concat(chunks).toString().trim());
+          const result: string = Buffer.concat(chunks).toString().trim();
+          this._log(result);
+          resolve(result);
         }
       });
 
