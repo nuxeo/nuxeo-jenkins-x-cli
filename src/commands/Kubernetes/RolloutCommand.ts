@@ -23,7 +23,7 @@ export class RolloutCommand implements CommandModule {
         alias: ['t'],
         type: 'number',
         describe: 'Rollout timeout in seconds.',
-        default: 120,
+        default: 300,
       }
     });
 
