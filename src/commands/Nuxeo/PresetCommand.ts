@@ -79,7 +79,7 @@ export class PresetCommand implements CommandModule {
       return;
     }
 
-    const yml: {} = PresetCommand.readPreset(`${args.preset}`);
+    const yml: {} = PresetCommand.readPreset(`${args.name}`);
     args._nx = { yml, ...args._nx };
     log(args._nx);
   }
