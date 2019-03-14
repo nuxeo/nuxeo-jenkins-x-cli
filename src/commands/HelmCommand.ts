@@ -21,7 +21,12 @@ export class HelmCommand implements CommandModule {
     const helmHome: string = await ProcessSpawner.create('helm').arg('home').execWithSpinner();
     if (!existsSync(helmHome)) {
       log(`Helm home is not initialized in: ${helmHome}`);
-      await ProcessSpawner.create('helm').arg('init').arg('--client-only').execWithSpinner();
+      await ProcessSpawner.create('helm')
+        .arg('init')
+        .arg('--client-only')
+        .arg('--service-account').arg('jenkins')
+        .execWithSpinner();
+
       await ProcessSpawner.create('helm')
         .arg('repo')
         .arg('add')
