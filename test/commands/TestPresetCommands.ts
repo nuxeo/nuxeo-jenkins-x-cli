@@ -26,7 +26,7 @@ describe('Preset Command', () => {
   it('parse correctly random yaml file', () => {
     const preset: any = PresetCommand['readYaml'](findPresetPath('mongodb'));
     expect(preset.helm.chart).eq('local-jenkins-x/nuxeo-mongodb');
-    expect(preset.nuxeo.vcs.properties.server).eq('mongodb://-mongodb..svc.cluster.local');
+    expect(preset.nuxeo.vcs.properties.server).eq('mongodb://mongodb..svc.cluster.local');
   });
 
   it('render variables in yaml file', () => {
@@ -35,7 +35,7 @@ describe('Preset Command', () => {
       NAMESPACE: 'nuxeal'
     });
 
-    expect(preset.nuxeo.vcs.properties.server).eq('mongodb://app-mongodb.nuxeal.svc.cluster.local');
+    expect(preset.nuxeo.vcs.properties.server).eq('mongodb://mongodb.nuxeal.svc.cluster.local');
   });
 
   it('transform namespace if length is more than 64 chars', () => {

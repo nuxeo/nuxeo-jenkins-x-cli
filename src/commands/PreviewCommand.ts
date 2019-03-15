@@ -178,13 +178,13 @@ export class PreviewCommand implements CommandModule {
       // XXX Mandatory to append one more time dependency dep flag
       // Because of the opposite reason of the rebase; dependencies look for `nuxeo.*` flag, which has been removed
       // See: https://github.com/nuxeo/nuxeo-helm-charts/blob/master/nuxeo/requirements.yaml
-      this.appendPresetValues(valuesFile, `${args.preset}`);
+      this.appendPresetValues(presetValues, `${args.preset}`);
 
       const pp: ProcessSpawner = ProcessSpawner.createSub(args)
         .arg('helm').arg('install')
         .arg('--namespace').arg(namespace)
         .arg('--values').arg(presetValues)
-        .arg('--name').arg(args.name)
+        .arg('--name').arg(`${args.name}-${args.preset}`) // XXX Should not have a dynamic suffix
         .arg('local-jenkins-x/nuxeo');
 
       return pp.execWithSpinner();

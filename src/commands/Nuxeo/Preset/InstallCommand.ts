@@ -46,7 +46,7 @@ export class InstallCommand implements CommandModule {
         .arg('helm')
         .arg('install')
         .arg('--debug')
-        .arg('--name').arg(`${process.env.APP_NAME}-${args.name}`)
+        .arg('--name').arg(args.name)
         .arg('--namespace').arg(args.namespace)
         .arg(preset.helm.chart)
         .execWithSpinner();
