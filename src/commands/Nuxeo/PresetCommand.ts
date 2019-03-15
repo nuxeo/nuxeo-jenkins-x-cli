@@ -17,14 +17,14 @@ const log: debug.IDebugger = debug('command:nuxeo:preset');
 export class PresetCommand implements CommandModule {
 
   // tslint:disable-next-line:no-any
-  public static readPreset(preset: string): {} {
+  public static readPreset(preset: string, ctx: {} = {}): {} {
     if (require.main === undefined) {
       throw new Error('Error occured...');
     }
 
     const filename: string = path.resolve(path.dirname(require.main.filename), 'presets', `${preset}.yml`);
 
-    return { nuxeo: {}, helm: {}, ...this.readYaml(filename, process.env) };
+    return { nuxeo: {}, helm: {}, ...this.readYaml(filename, { ...process.env, ...ctx }) };
   }
 
   // tslint:disable-next-line:no-any
@@ -79,7 +79,7 @@ export class PresetCommand implements CommandModule {
       return;
     }
 
-    const yml: {} = PresetCommand.readPreset(`${args.name}`);
+    const yml: {} = PresetCommand.readPreset(`${args.name}`, { NAMESPACE: args.namespace });
     args._nx = { yml, ...args._nx };
     log(args._nx);
   }

@@ -8,7 +8,7 @@ nuxeo:
   vcs:
     base: nuxeo.test.vcs
     properties:
-      server: "{{APP_NAME}}-postgresql.{{NAMESPACE}}.svc.cluster.local"
+      server: "{{APP_NAME}}-postgresql-postgresql.{{NAMESPACE}}.svc.cluster.local"
       dbname: vcstest
       database: nuxeo
       user: nuxeo

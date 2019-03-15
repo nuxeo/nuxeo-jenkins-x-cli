@@ -9,7 +9,7 @@ nuxeo:
     core: mongo
     base: nuxeo.test.mongodb
     properties:
-      server: mongodb://{{APP_NAME}}.{{NAMESPACE}}.svc.cluster.local
+      server: mongodb://{{APP_NAME}}-mongodb.{{NAMESPACE}}.svc.cluster.local
       dbname: vcstest
   preview:
     values:
