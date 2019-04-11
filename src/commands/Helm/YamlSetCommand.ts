@@ -29,8 +29,8 @@ export class YAMLSetCommand implements CommandModule {
         type: 'string'
       }
     });
-    args.example('$0 set-value --file-path charts/preview/values.yaml -key nuxeo.image.tag -value latest',
-      'Define the nuxeo docker image tag with the value "latest" in preview/values.yaml');
+    args.example('$0 helm set-value --file-path charts/preview/values.yaml --key key --value value',
+      'Define the key "key" with the value "value" in preview/values.yaml');
 
     return args;
   }
