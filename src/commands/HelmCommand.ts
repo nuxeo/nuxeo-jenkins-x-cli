@@ -5,6 +5,8 @@ import { Helper } from '../lib/Helper';
 import { ProcessSpawner } from '../lib/ProcessSpawner';
 import { CleanupCommand } from './Helm/CleanupCommand';
 import { InstallCommand } from './Helm/InstallCommand';
+import { YAMLSetCommand } from './Helm/YamlSetCommand';
+import { YAMLTemplateCommand } from './Helm/YamlTemplateCommand';
 
 const log: debug.IDebugger = debug('command:helm');
 
@@ -48,6 +50,8 @@ export class HelmCommand implements CommandModule {
     args.middleware(HelmCommand.helmInit);
     args.command(new InstallCommand());
     args.command(new CleanupCommand());
+    args.command(new YAMLSetCommand());
+    args.command(new YAMLTemplateCommand());
     args.options({
       'repo-host': {
         alias: ['h'],
