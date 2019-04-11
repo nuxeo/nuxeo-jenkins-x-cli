@@ -27,7 +27,7 @@ export class YAMLTemplateCommand implements CommandModule {
         type: 'string'
       }
     });
-    args.example('$0 template --file-path charts/preview/values.yaml',
+    args.example('$0 helm template --file-path charts/preview/values.yaml',
       'Replace the variables in preview/values.yaml with values defined in the environment variables');
 
     return args;
