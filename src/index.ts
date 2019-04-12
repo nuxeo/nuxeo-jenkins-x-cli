@@ -5,6 +5,7 @@ import { KubernetesCommand } from './commands/KubernetesCommand';
 import { NuxeoCommand } from './commands/NuxeoCommand';
 import { PRCommand } from './commands/PRCommand';
 import { PreviewCommand } from './commands/PreviewCommand';
+import { YAMLCommand } from './commands/YamlCommand';
 
 yargs
   .command(new HelmCommand())
@@ -12,6 +13,7 @@ yargs
   .command(new PRCommand())
   .command(new PreviewCommand())
   .command(new KubernetesCommand())
+  .command(new YAMLCommand())
   .option({
     'dry-run': {
       describe: 'Do not change anything in the system',

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { YAMLTemplateCommand } from '../../src/commands/Helm/YamlTemplateCommand';
+import { YAMLTemplateCommand } from '../../src/commands/Yaml/YamlTemplateCommand';
 import { YamlModifier } from '../../src/lib/YamlModifier';
 import tmp from 'tmp';
 

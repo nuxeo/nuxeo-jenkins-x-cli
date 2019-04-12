@@ -21,12 +21,6 @@ export class YAMLSetCommand implements CommandModule {
         describe: 'The value for the given key',
         type: 'string',
         required: true
-      },
-      'file-path': {
-        alias: ['f'],
-        describe: 'The path for the YAML file to edit',
-        required: true,
-        type: 'string'
       }
     });
     args.example('$0 helm set-value --file-path charts/preview/values.yaml --key key --value value',

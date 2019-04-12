@@ -19,14 +19,6 @@ export class YAMLTemplateCommand implements CommandModule {
   protected yaml: any;
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
-    args.option({
-      'file-path': {
-        alias: ['f'],
-        describe: 'The path for the YAML file to edit',
-        required: true,
-        type: 'string'
-      }
-    });
     args.example('$0 helm template --file-path charts/preview/values.yaml',
       'Replace the variables in preview/values.yaml with values defined in the environment variables');
 
