@@ -23,7 +23,9 @@ export class CleanupCommand implements CommandModule {
 
   public handler = async (args: Arguments): Promise<void> => {
     log(`Cleanup release ${args.name}`);
-    await ProcessSpawner.create('helm')
+
+    if (args['no-tiller'] === false) {
+      await ProcessSpawner.create('helm')
       .arg('delete')
       .arg(args.name)
       .arg('--purge')
@@ -31,6 +33,7 @@ export class CleanupCommand implements CommandModule {
       .catch(() => {
         log(`App name doesn't exists: ${args.name}`);
       });
+    }
 
     await ProcessSpawner.create('kubectl')
       .arg('delete')
