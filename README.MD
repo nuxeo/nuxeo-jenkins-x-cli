@@ -89,6 +89,7 @@ Middleware:
 
 - `helm init --client-only`
 - `helm repo add local-jenkins-x http://jenkins-x-chartmuseum:8080`
+- Check Tiller install: `kubectl get pods --all-namespaces --selector name=tiller --output jsonpath={.items..metadata.name}`
 
 Help:
 
@@ -115,9 +116,14 @@ Options:
 
 Install a remote Helm Chart in a target namespace.
 
-Internal Command:
+Internal Command (with Tiller **enabled**):
 
 - `helm install --name <install_name> --namespace <namespace> <chart_to_deploy>`
+
+Internal Command (with Tiller **disabled**):
+
+- `helm fetch --untar --untardir <TMP_DIR> <chart_to_deploy>`
+- `helm template --name <install_name> --namespace <namespace> . | kubectl apply --namespace <namespace> -f -`
 
 Help:
 
@@ -147,7 +153,7 @@ Uninstall and purge a Chart then remove the target namespace.
 
 Internal Commands:
 
-- `helm delete <name> --purge`
+- `helm delete <name> --purge` - only if Tiller is enabled.
 - `kubectl delete ns <namespace>`
 
 Help:
