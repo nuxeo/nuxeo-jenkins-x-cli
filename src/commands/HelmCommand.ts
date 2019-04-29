@@ -40,12 +40,28 @@ export class HelmCommand implements CommandModule {
     return Promise.resolve();
   }
 
+  public static isTillerEnabled: MiddlewareFunction = async (args: Arguments): Promise<void> => {
+    // Try to find Tiller pod
+    const tillerPod: String = await ProcessSpawner.create('kubectl')
+      .arg('get').arg('pods')
+      .arg('--all-namespaces')
+      .arg('--selector').arg('name=tiller')
+      .arg('--output').arg('jsonpath={.items..metadata.name}')
+      .execWithSpinner();
+
+    args['no-tiller'] = tillerPod === '';
+
+    return Promise.resolve();
+  }
+
   public command: string = 'helm';
 
   public describe: string = 'Entrypoint for helm commands';
 
   public builder: (args: Argv) => Argv = (args: Argv) => {
     args.middleware(HelmCommand.helmInit);
+    args.middleware(HelmCommand.isTillerEnabled);
+
     args.command(new InstallCommand());
     args.command(new CleanupCommand());
     args.options({
@@ -59,7 +75,7 @@ export class HelmCommand implements CommandModule {
         describe: 'Target Kubernetes namespace.',
         required: true,
         coerce: Helper.formatNamespace,
-      },
+      }
     });
     args.demandCommand();
 
