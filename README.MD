@@ -136,6 +136,9 @@ Options:
   --namespace, -n  Target Kubernetes namespace.                       [required]
   --name                                                     [string] [required]
   --values, -f     Specify values in a YAML file.                       [string]
+  --set            Set values on the command line (can specify multiple or
+                   separate values with commas: key1=val1,key2=val2)
+                                                           [array] [default: []]
 ```
 
 ##### Helm Cleanup
