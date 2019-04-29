@@ -20,6 +20,11 @@ export class InstallCommand implements CommandModule {
       alias: ['f'],
       type: 'string',
       description: 'Specify values in a YAML file.'
+    },
+    set: {
+      type: 'array',
+      description: 'Set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)',
+      default: [],
     }
   };
 
@@ -28,6 +33,10 @@ export class InstallCommand implements CommandModule {
       .arg('install')
       .arg('--name').arg(args.name)
       .arg('--namespace').arg(args.namespace);
+
+    for (const value of <string[]>args.set) {
+      ps.arg('--set').arg(value);
+    }
 
     if (args.values !== undefined) {
       ps.arg('-f').arg(args.values);
